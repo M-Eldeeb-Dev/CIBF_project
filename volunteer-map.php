@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'volunteer') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('volunteer');
+
 $volunteer_name = $_SESSION['user_name'] ?? 'متطوع';
 $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
 ?>
@@ -13,7 +11,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="300">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>موقعي على الخريطة - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -21,10 +19,21 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            min-height: 100vh;
+        }
+
+        /* Mobile First Improvements */
+        button,
+        a,
+        input,
+        select {
+            min-height: 44px;
+            touch-action: manipulation;
         }
 
         .bg-primary {
@@ -113,10 +122,82 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                 opacity: 0.8;
             }
         }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: toast-in 0.4s ease forwards;
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .toast.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .toast.hiding {
+            animation: toast-out 0.3s ease forwards;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
     </style>
 </head>
 
 <body class="bg-light relative min-h-screen">
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
         <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
@@ -148,18 +229,16 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
             </div>
         </div>
 
-        <!-- Hall Selector (only shown when assigned) -->
-        <div id="hall-info" class="bg-blue-50 rounded-2xl p-4 mb-4 hidden">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                    </svg>
+        <!-- Location Display Card (dynamically styled based on location type) -->
+        <div id="hall-info" class="rounded-2xl p-4 mb-4 hidden transition-all duration-300">
+            <div id="location-card" class="flex items-center gap-4">
+                <div id="location-icon" class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg">
+                    <!-- Icon will be inserted dynamically -->
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm text-gray-600">القاعة الحالية</p>
-                    <p id="hall-number" class="font-bold text-primary text-lg">---</p>
+                    <p id="location-label" class="text-sm opacity-80">موقعك الحالي</p>
+                    <p id="hall-number" class="font-bold text-xl">---</p>
+                    <p id="location-desc" class="text-xs opacity-70 mt-1"></p>
                 </div>
             </div>
         </div>
@@ -339,6 +418,26 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
         }
 
         function updateUI(data) {
+            // Format hall name helper
+            function formatHallName(hallId) {
+                if (hallId == 101) return 'البوابة';
+                if (hallId == 102) return 'غرفة المعلومات';
+                if (hallId >= 1 && hallId <= 5) return `قاعة ${hallId}`;
+                return 'غير محدد';
+            }
+
+            // Toast notification function
+            function showToast(message, type = 'warning') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icons = { success: '✓', error: '✕', warning: '⚠' };
+                toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => { toast.classList.add('hiding'); setTimeout(() => toast.remove(), 300); }, 3000);
+            }
+            window.showToast = showToast;
+
             const presenceText = document.getElementById('presence-text');
             const presenceIndicator = document.getElementById('presence-indicator');
             const hallInfo = document.getElementById('hall-info');
@@ -356,7 +455,45 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                 presenceIndicator.className = 'w-4 h-4 rounded-full bg-green-500 pulse-dot';
 
                 hallInfo.classList.remove('hidden');
-                hallNumber.textContent = `قاعة ${data.hall_id}`;
+
+                // Dynamic styling based on location type
+                const locationIcon = document.getElementById('location-icon');
+                const locationLabel = document.getElementById('location-label');
+                const locationDesc = document.getElementById('location-desc');
+
+                // Determine effective ID based on location
+                let effectiveHallId = data.hall_id;
+                if (data.current_loc == '101') effectiveHallId = 101;
+                else if (data.current_loc == '102') effectiveHallId = 102;
+
+                if (effectiveHallId == 101) {
+                    // Gate - Special styling
+                    hallInfo.className = 'rounded-2xl p-4 mb-4 transition-all duration-300 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg';
+                    locationIcon.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white/20';
+                    locationIcon.innerHTML = `<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 19V5c0-1.1-.9-2-2-2H7c-1.1 0-2 .9-2 2v14H3v2h18v-2h-2zm-6 0h-2v-2h2v2zm0-4h-2V9h2v6z"/></svg>`;
+                    hallNumber.textContent = 'البوابة الرئيسية';
+                    hallNumber.className = 'font-bold text-xl text-white';
+                    locationLabel.textContent = 'موقعك الحالي';
+                    locationDesc.textContent = 'أنت في نقطة استقبال الزوار';
+                } else if (effectiveHallId == 102) {
+                    // Info Room - Special styling
+                    hallInfo.className = 'rounded-2xl p-4 mb-4 transition-all duration-300 bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg';
+                    locationIcon.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white/20';
+                    locationIcon.innerHTML = `<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
+                    hallNumber.textContent = 'غرفة المعلومات';
+                    hallNumber.className = 'font-bold text-xl text-white';
+                    locationLabel.textContent = 'موقعك الحالي';
+                    locationDesc.textContent = 'أنت في مركز الدعم والمساعدة';
+                } else {
+                    // Regular hall - Default styling
+                    hallInfo.className = 'rounded-2xl p-4 mb-4 transition-all duration-300 bg-gradient-to-r from-blue-500 to-primary text-white shadow-lg';
+                    locationIcon.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white/20';
+                    locationIcon.innerHTML = `<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+                    hallNumber.textContent = formatHallName(data.hall_id);
+                    hallNumber.className = 'font-bold text-xl text-white';
+                    locationLabel.textContent = 'القاعة الحالية';
+                    locationDesc.textContent = `موقعك: ${data.current_loc}`;
+                }
 
                 removeBtn.classList.remove('hidden');
                 mapContainer.classList.remove('hidden');
@@ -464,7 +601,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
         window.confirmRemove = async function () {
             const selectedReason = document.querySelector('input[name="reason"]:checked');
             if (!selectedReason) {
-                alert('يرجى اختيار سبب الإزالة');
+                showToast('يرجى اختيار سبب الإزالة', 'warning');
                 return;
             }
 
@@ -472,7 +609,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
             if (reason === 'other') {
                 reason = document.getElementById('other-reason').value.trim();
                 if (!reason) {
-                    alert('يرجى كتابة السبب');
+                    showToast('يرجى كتابة السبب', 'warning');
                     return;
                 }
             }
@@ -526,7 +663,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                 await loadVolunteerLocation();
             } catch (error) {
                 console.error('Error removing location:', error);
-                alert('حدث خطأ في إزالة الموقع');
+                showToast('حدث خطأ في إزالة الموقع', 'error');
             } finally {
                 btn.textContent = 'تأكيد الإزالة';
                 btn.disabled = false;

@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'volunteer') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('volunteer');
+
 $volunteer_name = $_SESSION['user_name'] ?? 'متطوع';
 $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
 
@@ -21,16 +19,43 @@ require_once 'notes_loader.php';
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>لوحة المتطوع - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile-First Enhancements */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            button,
+            a {
+                min-height: 44px;
+                /* Minimum touch target */
+                touch-action: manipulation;
+            }
+
+            input {
+                font-size: 16px !important;
+                /* Prevent zoom on iOS */
+            }
+        }
+
+        /* Safe Area Support */
+        .safe-pb {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         .bg-primary {
@@ -127,7 +152,7 @@ require_once 'notes_loader.php';
     <?php include 'notes_ticker.php'; ?>
 
     <!-- Main Content -->
-    <div class="max-w-md mx-auto px-4 py-6">
+    <div class="max-w-md mx-auto px-4 py-6 pb-24">
         <!-- Google Drive Viewer -->
         <div class="bg-white rounded-3xl shadow-xl p-2 mb-6 overflow-hidden">
             <h2 class="text-2xl font-bold text-center text-blue-600 underline mb-4 p-2">خريطة القاعات</h2>
@@ -146,17 +171,33 @@ require_once 'notes_loader.php';
                     <span id="status-badge"
                         class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">نشط</span>
                 </div>
+            </div>
 
-                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                    <span class="text-gray-600">القاعة الحالية</span>
-                    <span class="text-dark font-semibold" id="current-hall">جاري التحميل...</span>
+            <!-- Enhanced Location Display Card -->
+            <div id="location-card-container" class="mt-4 hidden">
+                <div id="location-card" class="rounded-2xl p-4 transition-all duration-300 shadow-lg">
+                    <div class="flex items-center gap-4">
+                        <div id="location-icon"
+                            class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white/20"></div>
+                        <div class="flex-1">
+                            <p id="location-label" class="text-sm opacity-80">موقعك الحالي</p>
+                            <p id="current-hall" class="font-bold text-xl">جاري التحميل...</p>
+                            <p id="current-location" class="text-xs opacity-70 mt-1"></p>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                    <span class="text-gray-600">الموقع</span>
-                    <span class="text-dark font-semibold" id="current-location">القاهرة، مصر</span>
-                </div>
+            <!-- Fallback No Location Message -->
+            <div id="no-location-msg" class="mt-4 bg-gray-50 rounded-2xl p-4 text-center hidden">
+                <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                <p class="text-gray-500 font-semibold">لم يتم تعيين موقع لك بعد</p>
+            </div>
 
+            <div class="space-y-4 mt-4" id="volunteer-extra-info">
                 <div class="flex items-center justify-between py-3">
                     <span class="text-gray-600">تاريخ الانضمام</span>
                     <span class="text-dark font-semibold">21 يناير 2026</span>
@@ -285,25 +326,93 @@ require_once 'notes_loader.php';
         }
 
         function updateUI(data) {
-            // Update presence badge
-            const presenceBadge = document.getElementById('presence-badge');
-            const isPresent = data.is_present === true || data.is_occupied === true;
+            // Configuration for Hall Styles
+            const HALL_CONFIG = {
+                101: {
+                    name: 'البوابة الرئيسية',
+                    label: 'موقعك الحالي',
+                    desc: 'نقطة استقبال الزوار',
+                    style: 'from-emerald-500 to-teal-600',
+                    icon: '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 19V5c0-1.1-.9-2-2-2H7c-1.1 0-2 .9-2 2v14H3v2h18v-2h-2zm-6 0h-2v-2h2v2zm0-4h-2V9h2v6z"/></svg>'
+                },
+                102: {
+                    name: 'غرفة المعلومات',
+                    label: 'موقعك الحالي',
+                    desc: 'مركز الدعم والمساعدة',
+                    style: 'from-violet-500 to-purple-600',
+                    icon: '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'
+                },
+                default: {
+                    name: (id) => (id >= 1 && id <= 5) ? `قاعة ${id}` : 'غير محدد',
+                    label: 'القاعة الحالية',
+                    desc: (loc) => `موقعك: ${loc}`,
+                    style: 'from-blue-500 to-blue-600',
+                    icon: '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+                }
+            };
+
+            // DOM Elements
+            const els = {
+                badge: document.getElementById('presence-badge'),
+                container: document.getElementById('location-card-container'),
+                noLocMsg: document.getElementById('no-location-msg'),
+                card: document.getElementById('location-card'),
+                icon: document.getElementById('location-icon'),
+                label: document.getElementById('location-label'),
+                hall: document.getElementById('current-hall'),
+                loc: document.getElementById('current-location')
+            };
+
+            // Presence Logic
+            // Only consider occupied if there is a valid location string
+            const isOccupied = data.is_occupied === true && data.current_loc && data.current_loc !== '';
+            const isPresent = data.is_present === true || isOccupied;
 
             if (isPresent) {
-                presenceBadge.textContent = 'متواجد';
-                presenceBadge.className = 'presence-badge bg-green-400 text-white px-3 py-1 rounded-full text-sm font-bold';
+                els.badge.textContent = 'متواجد';
+                els.badge.className = 'presence-badge bg-green-400 text-white px-3 py-1 rounded-full text-sm font-bold';
             } else {
-                presenceBadge.textContent = 'غير متواجد';
-                presenceBadge.className = 'presence-badge bg-yellow-400 text-dark px-3 py-1 rounded-full text-sm font-bold';
+                els.badge.textContent = 'غير متواجد';
+                els.badge.className = 'presence-badge bg-yellow-400 text-dark px-3 py-1 rounded-full text-sm font-bold';
             }
 
-            // Update hall info
-            const hallElement = document.getElementById('current-hall');
-            hallElement.textContent = data.hall_id ? `قاعة ${data.hall_id}` : 'غير محدد';
+            // Location Logic
+            const hasLocation = data.hall_id && data.current_loc;
 
-            // Update location
-            const locationElement = document.getElementById('current-location');
-            locationElement.textContent = data.current_loc || 'القاهرة، مصر';
+            if (hasLocation) {
+                els.container.classList.remove('hidden');
+                els.noLocMsg.classList.add('hidden');
+
+                // Determine config ID: prioritize location code (101/102) over actual hall_id
+                // This fixes cases where hall_id might be 1 but location is explicitly 101 (Gate)
+                let configId = data.hall_id;
+                if (data.current_loc == '101') configId = 101;
+                else if (data.current_loc == '102') configId = 102;
+
+                const config = HALL_CONFIG[configId] || HALL_CONFIG.default;
+
+                // apply styles
+                els.card.className = `rounded-2xl p-4 transition-all duration-300 shadow-lg bg-gradient-to-r text-white ${config.style}`;
+                els.icon.className = 'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white/20';
+                els.icon.innerHTML = config.icon;
+
+                // set text content
+                els.hall.className = 'font-bold text-xl text-white';
+
+                if (configId == 101 || configId == 102) {
+                    els.hall.textContent = config.name;
+                    els.label.textContent = config.label;
+                    els.loc.textContent = config.desc;
+                } else {
+                    els.hall.textContent = typeof config.name === 'function' ? config.name(data.hall_id) : config.name;
+                    els.label.textContent = config.label;
+                    els.loc.textContent = typeof config.desc === 'function' ? config.desc(data.current_loc) : config.desc;
+                }
+
+            } else {
+                els.container.classList.add('hidden');
+                els.noLocMsg.classList.remove('hidden');
+            }
         }
 
         // Initial load

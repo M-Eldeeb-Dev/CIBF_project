@@ -1,9 +1,7 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'volunteer') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('volunteer');
+
 $volunteer_name = $_SESSION['user_name'] ?? 'متطوع';
 $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
 $volunteer_group = $_SESSION['user_group'] ?? 'N/A';
@@ -17,16 +15,32 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>الملف الشخصي - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile-First Enhancements */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            button,
+            a {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
         }
 
         .bg-primary {
@@ -61,7 +75,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
         <h1 class="text-2xl font-bold text-center">الملف الشخصي</h1>
     </div>
 
-    <div class="max-w-md mx-auto px-4">
+    <div class="max-w-md mx-auto px-4 pb-24">
         <!-- Profile Info -->
         <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
             <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden border-4 border-yellow-400">
@@ -100,7 +114,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
                         id="profile-sector"><?php echo htmlspecialchars($volunteer_sector); ?></span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">القاعة الحالية</span>
+                    <span class="text-gray-600" id="profile-hall-label">القاعة الحالية</span>
                     <span class="text-dark font-semibold" id="profile-hall">جاري التحميل...</span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
@@ -193,12 +207,22 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
         }
 
         function updateUI(data) {
+            // Format hall name helper
+            function formatHallName(hallId) {
+                if (hallId == 101) return 'البوابة';
+                if (hallId == 102) return 'غرفة المعلومات';
+                if (hallId >= 1 && hallId <= 5) return `قاعة ${hallId}`;
+                return 'غير محدد';
+            }
+
             // Update status text
             document.getElementById('presence-status').textContent = 'متطوع نشط';
 
             // Update presence badge
             const presenceBadge = document.getElementById('presence-badge');
-            const isPresent = data.is_present === true || data.is_occupied === true;
+            // Fix: Only consider occupied if there is a valid location
+            const isOccupied = data.is_occupied === true && data.current_loc && data.current_loc !== '';
+            const isPresent = data.is_present === true || isOccupied;
 
             if (isPresent) {
                 presenceBadge.textContent = '✓ متواجد حالياً';
@@ -208,8 +232,17 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
                 presenceBadge.className = 'bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm font-bold';
             }
 
-            // Update hall
-            document.getElementById('profile-hall').textContent = data.hall_id ? `قاعة ${data.hall_id}` : 'غير محدد';
+            // Determine effective ID based on location
+            let effectiveHallId = data.hall_id;
+            if (data.current_loc == '101') effectiveHallId = 101;
+            else if (data.current_loc == '102') effectiveHallId = 102;
+
+            // Update hall with formatted name
+            document.getElementById('profile-hall').textContent = formatHallName(effectiveHallId);
+
+            // Update label
+            const isSpecial = effectiveHallId == 101 || effectiveHallId == 102;
+            document.getElementById('profile-hall-label').textContent = isSpecial ? 'الموقع الحالي' : 'القاعة الحالية';
 
             // Update group if different
             if (data.group) {

@@ -15,6 +15,7 @@ require_once 'notes_loader.php';
     <title>روابط هامة - معرض الكتاب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
 
 <body class="bg-gray-50 font-[Cairo]">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">

@@ -27,6 +27,25 @@ let currentHall = 1;
 let subscription = null;
 let allVolunteers = [];
 
+// Toast notification function (uses global container if exists)
+function showToast(message, type = "info") {
+  const container = document.getElementById("toast-container");
+  if (!container) {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    return;
+  }
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  const icons = { success: "✓", error: "✕", info: "ℹ" };
+  toast.innerHTML = `<span>${icons[type] || ""}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("hiding");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+window.showToast = showToast;
+
 /**
  * Initialize the Leaflet map
  * @param {string} containerId - ID of the map container element
@@ -328,7 +347,7 @@ window.assignVolunteerToSpot = async function (lat, lng) {
   ).value;
 
   if (!volunteerCode) {
-    alert("الرجاء اختيار متطوع");
+    showToast("الرجاء اختيار متطوع", "error");
     return;
   }
 
@@ -351,7 +370,7 @@ window.assignVolunteerToSpot = async function (lat, lng) {
     // Refresh page as requested
     await location.reload();
   } else {
-    alert("حدث خطأ في التعيين");
+    showToast("حدث خطأ في التعيين", "error");
     btn.textContent = "تعيين";
     btn.disabled = false;
   }
@@ -420,11 +439,11 @@ async function proceedRemoval(volunteerCode) {
       successModal.classList.remove("hidden");
       successModal.classList.add("flex");
     } else {
-      alert("تمت الإزالة بنجاح");
+      showToast("تمت الإزالة بنجاح", "success");
       location.reload();
     }
   } else {
-    alert("حدث خطأ في الإزالة");
+    showToast("حدث خطأ في الإزالة", "error");
   }
 }
 

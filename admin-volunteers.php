@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('admin');
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -11,7 +8,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="300">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>قائمة المتطوعين - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +17,24 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile-First Enhancements */
+        @media (max-width: 640px) {
+
+            button,
+            a,
+            input,
+            select {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+
+            input {
+                font-size: 16px !important;
+            }
         }
 
         .bg-primary {
@@ -199,6 +213,14 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
         function renderVolunteers(volunteers) {
             const grid = document.getElementById('volunteers-grid');
 
+            // Format hall name helper
+            function formatHallName(hallId) {
+                if (hallId == 101) return 'البوابة الرئيسية';
+                if (hallId == 102) return 'غرفة المعلومات';
+                if (hallId >= 1 && hallId <= 5) return `قاعة ${hallId}`;
+                return 'غير محدد';
+            }
+
             if (volunteers.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center py-12 text-gray-500">
@@ -208,15 +230,19 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                 return;
             }
 
-            grid.innerHTML = volunteers.map(v => `
+            grid.innerHTML = volunteers.map(v => {
+                const isOccupied = v.is_occupied === true && v.current_loc && v.current_loc !== '';
+                const isPresent = v.is_present === true || isOccupied;
+
+                return `
                 <div class="volunteer-card bg-white rounded-2xl shadow-lg p-4">
                     <div class="flex items-start justify-between mb-3">
                         <div>
                             <h3 class="font-bold text-dark">${v.name}</h3>
                             <p class="text-sm text-primary">${v.volunteerCode}</p>
                         </div>
-                        <span class="status-badge ${v.is_present ? 'status-present' : 'status-absent'}">
-                            ${v.is_present ? 'متواجد' : 'غير متواجد'}
+                        <span class="status-badge ${isPresent ? 'status-present' : 'status-absent'}">
+                            ${isPresent ? 'متواجد' : 'غير متواجد'}
                         </span>
                     </div>
                     <div class="grid grid-cols-2 gap-2 text-sm">
@@ -233,18 +259,18 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                             <span class="font-semibold">${v.sector || 'N/A'}</span>
                         </div>
                         <div class="bg-gray-50 p-2 rounded-lg">
-                            <span class="text-gray-500">القاعة:</span>
-                            <span class="font-semibold">${v.hall_id || 'غير محدد'}</span>
+                            <span class="text-gray-500">${(v.hall_id == 101 || v.hall_id == 102) ? 'الموقع:' : 'القاعة:'}</span>
+                            <span class="font-semibold">${formatHallName(v.hall_id)}</span>
                         </div>
                     </div>
                     ${v.current_loc ? `
                         <div class="mt-3 bg-blue-50 p-2 rounded-lg text-sm">
                             <span class="text-gray-500">الموقع الحالي:</span>
-                            <span class="font-semibold text-primary">${v.current_loc}</span>
+                            <span class="font-semibold text-primary">${v.current_loc == '101' ? 'البوابة' : v.current_loc == '102' ? 'غرفة المعلومات' : v.current_loc}</span>
                         </div>
                     ` : ''}
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Filter volunteers
@@ -272,9 +298,12 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                     }
                 }
 
+                const isOccupied = v.is_occupied === true && v.current_loc && v.current_loc !== '';
+                const isPresent = v.is_present === true || isOccupied;
+
                 const matchesStatus = !statusFilter ||
-                    (statusFilter === 'present' && (v.is_present || v.is_occupied)) ||
-                    (statusFilter === 'absent' && (!v.is_present && !v.is_occupied));
+                    (statusFilter === 'present' && isPresent) ||
+                    (statusFilter === 'absent' && !isPresent);
                 return matchesSearch && matchesHall && matchesGroup && matchesStatus;
             });
 

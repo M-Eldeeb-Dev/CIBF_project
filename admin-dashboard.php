@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('admin');
 
 // Handle Notes Logic
 $notes_file = __DIR__ . '/json_files/notes.json';
@@ -35,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>لوحة الإدارة - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +41,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile-First Enhancements */
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            button,
+            a {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+
+            input {
+                font-size: 16px !important;
+            }
         }
 
         .bg-primary {

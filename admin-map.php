@@ -1,9 +1,6 @@
 <?php
-session_start();
-if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    header('Location: index.php');
-    exit;
-}
+require_once 'includes/auth-guard.php';
+requireAuth('admin');
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -11,7 +8,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="300">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>إدارة الخرائط - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -22,7 +19,23 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: env(safe-area-inset-bottom, 80px);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Mobile-First Enhancements */
+        @media (max-width: 640px) {
+
+            button,
+            a,
+            input[type="radio"]+label {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+
+            input {
+                font-size: 16px !important;
+            }
         }
 
         .bg-primary {
@@ -91,10 +104,82 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
         .legend-dot.yellow {
             background-color: #eab308;
         }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: toast-in 0.4s ease forwards;
+            pointer-events: auto;
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .toast.hiding {
+            animation: toast-out 0.3s ease forwards;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toast-out {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
     </style>
 </head>
 
 <body class="bg-light relative min-h-screen">
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
         <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
@@ -235,7 +320,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                         <div class="grid grid-cols-2 gap-3">
                             <label
                                 class="relative flex items-center justify-center p-4 border-2 border-gray-50 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all [&:has(input:checked)]:border-primary [&:has(input:checked)]:bg-blue-50 group">
-                                <input type="radio" name="assignment-loc" value="8" class="hidden" checked>
+                                <input type="radio" name="assignment-loc" value="101" class="hidden" checked>
                                 <span
                                     class="font-bold text-gray-700 group-[&:has(input:checked)]:text-primary">البوابة</span>
                                 <div class="absolute top-2 left-2 opacity-0 group-[&:has(input:checked)]:opacity-100">
@@ -248,7 +333,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                             </label>
                             <label
                                 class="relative flex items-center justify-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all [&:has(input:checked)]:border-primary [&:has(input:checked)]:bg-blue-50 group">
-                                <input type="radio" name="assignment-loc" value="9" class="hidden">
+                                <input type="radio" name="assignment-loc" value="102" class="hidden">
                                 <span class="font-bold text-gray-700 group-[&:has(input:checked)]:text-primary">غرفة
                                     المعلومات</span>
                                 <div class="absolute top-2 left-2 opacity-0 group-[&:has(input:checked)]:opacity-100">
@@ -434,6 +519,37 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
         let currentActiveTab = 1;
         let allVolunteers = [];
 
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icons = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ'
+            };
+
+            toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.showToast = showToast;
+
+        // Format hall name helper
+        function formatHallName(hallId) {
+            if (hallId == 101) return 'البوابة';
+            if (hallId == 102) return 'غرفة المعلومات';
+            if (hallId >= 1 && hallId <= 5) return `قاعة ${hallId}`;
+            return hallId || 'غير محدد';
+        }
+        window.formatHallName = formatHallName;
+
         // Initialize map when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             await initMap('map-container', 1);
@@ -441,11 +557,16 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
             await loadReasonsLog();
             await initManualAssignment();
 
-            // Subscribe to updates
-            subscribeToVolunteers(async () => {
+            // Subscribe to updates with visual feedback
+            subscribeToVolunteers(async (payload) => {
                 await loadReasonsLog();
                 allVolunteers = await getAllVolunteers();
                 window.updateManualVolList();
+
+                // Show realtime update notification
+                if (payload.eventType === 'UPDATE') {
+                    showToast('تم تحديث بيانات المتطوعين', 'info');
+                }
             });
         });
 
@@ -469,7 +590,7 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                     volList.innerHTML = filtered.map(v => {
                         const isAssigned = v.is_present || v.is_occupied;
                         const statusColor = isAssigned ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600';
-                        const statusLabel = isAssigned ? `${v.current_loc == '8' ? 'بوابة' : v.current_loc == '9' ? 'غرفة' : 'معين'}` : 'متاح';
+                        const statusLabel = isAssigned ? `${v.current_loc == '101' ? 'بوابة' : v.current_loc == '102' ? 'غرفة معلومات' : 'معين'}` : 'متاح';
 
                         return `
                             <div class="vol-item p-4 cursor-pointer hover:bg-gray-50 border-b border-gray-50 flex justify-between items-center transition-all group" 
@@ -527,14 +648,14 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                 const success = await assignVolunteer(code, hallId, locValue);
 
                 if (success) {
-                    alert('تم تعيين المتطوع بنجاح');
+                    showToast('تم تعيين المتطوع بنجاح', 'success');
                     searchInput.value = '';
                     document.getElementById('selected-manual-vol-code').value = '';
                     assignBtn.textContent = 'تأكيد التعيين';
                     allVolunteers = await getAllVolunteers();
                     updateList();
                 } else {
-                    alert('حدث خطأ أثناء التعيين');
+                    showToast('حدث خطأ أثناء التعيين', 'error');
                     assignBtn.disabled = false;
                     assignBtn.textContent = 'تأكيد التعيين';
                 }
@@ -568,18 +689,21 @@ if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
                 if (filtered.length === 0) {
                     findList.innerHTML = '<div class="p-4 text-center text-gray-400 text-sm">لا يوجد متطوعين معينين بهذا الاسم</div>';
                 } else {
-                    findList.innerHTML = filtered.map(v => `
+                    findList.innerHTML = filtered.map(v => {
+                        const hallDisplay = formatHallName(v.hall_id);
+                        const locDisplay = v.current_loc == '101' ? 'البوابة' : v.current_loc == '102' ? 'غرفة المعلومات' : v.current_loc;
+                        return `
                         <div class="vol-item p-3 cursor-pointer hover:bg-blue-50 border-b border-gray-50 flex justify-between items-center" 
                             onclick="focusVolunteerOnMap('${v.volunteerCode}', ${v.hall_id})">
                             <div>
                                 <span class="font-bold block text-dark">${v.name}</span>
-                                <span class="text-xs text-primary font-semibold">قاعة ${v.hall_id} - ${v.current_loc}</span>
+                                <span class="text-xs text-primary font-semibold">${hallDisplay} - ${locDisplay}</span>
                             </div>
                             <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
                         </div>
-                    `).join('');
+                    `}).join('');
                 }
                 findList.classList.remove('hidden');
             };

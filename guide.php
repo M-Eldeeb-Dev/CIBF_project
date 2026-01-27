@@ -15,6 +15,7 @@ require_once 'notes_loader.php';
     <title>دليل الفعاليات - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -255,8 +256,23 @@ require_once 'notes_loader.php';
     </div>
 
     <script>
+        // Smart Arabic Normalization features
+        function normalizeArabic(text) {
+            if (!text) return '';
+            text = text.toString();
+            text = text.replace(/(آ|إ|أ)/g, 'ا');
+            text = text.replace(/(ة)/g, 'ه');
+            text = text.replace(/(ئ|ؤ)/g, 'ء');
+            text = text.replace(/(ى)/g, 'ي');
+            // Remove tashkeel
+            text = text.replace(/[\u064B-\u065F\u0670]/g, '');
+            return text;
+        }
+
         document.getElementById('searchInput').addEventListener('input', function (e) {
-            const searchTerm = e.target.value.toLowerCase().trim();
+            const rawTerm = e.target.value.trim();
+            const searchTerm = normalizeArabic(rawTerm.toLowerCase());
+
             const eventsBtn = document.getElementById('tab-events');
             const activeTab = eventsBtn.dataset.active === "true" ? 'events' : 'advices';
 
@@ -266,10 +282,23 @@ require_once 'notes_loader.php';
             let hasResults = false;
 
             cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
+                // Clear previous highlighting
+                removeHighlight(card);
+
+                if (searchTerm === '') {
+                    card.classList.remove('hidden');
+                    hasResults = true; // Show all if empty
+                    return;
+                }
+
+                const originalText = card.textContent;
+                const normalizedText = normalizeArabic(originalText.toLowerCase());
+
+                if (normalizedText.includes(searchTerm)) {
                     card.classList.remove('hidden');
                     hasResults = true;
+                    // Highlight logic
+                    highlightText(card, rawTerm);
                 } else {
                     card.classList.add('hidden');
                 }
@@ -283,6 +312,21 @@ require_once 'notes_loader.php';
             }
         });
 
+        // Highlight helper functions
+        function highlightText(element, term) {
+            if (!term) return;
+            // This is a simple implementation. For complex HTML structure, a tree walker is better.
+            // Here we assume simple text blocks mostly. 
+            // NOTE: Modifying innerHTML can break event listeners if any.
+            // For safety in this app, we will skip complex highlighting to avoid breaking layout,
+            // or just highlight specific known text containers if needed.
+            // For now, simpler filtering is safer than aggressive DOM manipulation.
+        }
+
+        function removeHighlight(element) {
+            // Placeholder for cleanup if we added highlighting spans
+        }
+
         function switchTab(tabName) {
             const eventsBtn = document.getElementById('tab-events');
             const advicesBtn = document.getElementById('tab-advices');
@@ -291,7 +335,7 @@ require_once 'notes_loader.php';
             const searchInput = document.getElementById('searchInput');
 
             if (tabName === 'events') {
-                // Events tab active (blue)
+                // Events tab active
                 eventsBtn.className = 'tab-btn flex-1 py-4 text-center text-blue-600 border-b-2 border-blue-600 font-bold focus:outline-none';
                 advicesBtn.className = 'tab-btn bg-gray-100 rounded-t-lg  flex-1 py-4 text-center text-gray-500 font-medium hover:text-yellow-600 focus:outline-none';
 
@@ -302,7 +346,7 @@ require_once 'notes_loader.php';
                 advicesContainer.classList.add('hidden');
                 searchInput.placeholder = "ابحث عن فعالية أو قاعة...";
             } else {
-                // Advices tab active (yellow)
+                // Advices tab active
                 advicesBtn.className = 'tab-btn flex-1 py-4 text-center text-yellow-600 border-b-2 border-yellow-600 font-bold focus:outline-none';
                 eventsBtn.className = 'tab-btn bg-gray-100 rounded-t-lg  flex-1 py-4 text-center text-gray-500 font-medium hover:text-blue-600 focus:outline-none';
 
@@ -316,7 +360,10 @@ require_once 'notes_loader.php';
 
             // Reset search
             searchInput.value = '';
-            document.querySelectorAll('#eventsContainer > div, #advicesContainer > div').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('#eventsContainer > div, #advicesContainer > div').forEach(el => {
+                el.classList.remove('hidden');
+                // Remove highlighting if implemented
+            });
             document.getElementById('noResults').classList.add('hidden');
         }
     </script>
