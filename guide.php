@@ -19,7 +19,7 @@ require_once 'notes_loader.php';
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: 80px;
+            padding-bottom: 120px;
         }
 
         .bg-primary {
@@ -57,126 +57,68 @@ require_once 'notes_loader.php';
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
             </span>
-            <input type="text" id="searchInput" placeholder="ابحث عن فعالية أو قاعة..."
+            <input type="text" id="searchInput" placeholder="ابحث في النصائح..."
                 class="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition shadow-sm">
         </div>
 
         <?php
-        $json_file_path = 'json_files/guide_data.json';
-        $json_data = file_get_contents($json_file_path);
-
-        // Remove BOM if present
-        if (strpos($json_data, "\xEF\xBB\xBF") === 0) {
-            $json_data = substr($json_data, 3);
+        // Load halls advices from structured JSON
+        $halls_advices_path = 'json_files/halls_advices.json';
+        $halls_advices_data = file_get_contents($halls_advices_path);
+        if (strpos($halls_advices_data, "\xEF\xBB\xBF") === 0) {
+            $halls_advices_data = substr($halls_advices_data, 3);
         }
+        $halls_advices = json_decode($halls_advices_data, true) ?? [];
+        $halls = $halls_advices['halls'] ?? [];
 
-        $data = json_decode($json_data, true) ?? [];
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            echo '<div class="text-red-500 text-center py-4">Error loading data: ' . json_last_error_msg() . '</div>';
-        }
-
-        $events = $data['events'] ?? [];
-        $advices = $data['advices'] ?? [];
+        // Load event images from guide_data.json
+        $event_images = $halls_advices['event_images'] ?? [];
         ?>
 
-        <!-- Tabs -->
+        <!-- Tabs (2 tabs only: نصائح هامة and البرنامج) -->
         <div class="flex border-b border-gray-200 mb-6">
-            <button id="tab-events"
-                class="tab-bt flex-1 rounded-t-lg py-4 text-center text-blue-600 border-b-2 border-blue-600 font-bold focus:outline-none"
-                onclick="switchTab('events')" data-tab="events" data-active="true">
-                الفعاليات
-            </button>
             <button id="tab-advices"
-                class="tab-btn flex-1 bg-gray-100 rounded-t-lg py-4 text-center text-gray-500 font-medium hover:text-yellow-600 focus:outline-none"
-                onclick="switchTab('advices')" data-tab="advices" data-active="false">
+                class="tab-btn flex-1 rounded-t-lg py-4 text-center text-yellow-600 border-b-2 border-yellow-600 font-bold focus:outline-none"
+                onclick="switchTab('advices')" data-tab="advices" data-active="true">
                 نصائح هامة
             </button>
+            <button id="tab-images"
+                class="tab-btn flex-1 bg-gray-100 rounded-t-lg py-4 text-center text-gray-500 font-medium hover:text-green-600 focus:outline-none"
+                onclick="switchTab('images')" data-tab="images" data-active="false">
+                📅 البرنامج
+            </button>
         </div>
 
-        <!-- Events Container -->
-        <div id="eventsContainer">
-            <?php if (empty($events)): ?>
-                <div class="text-center text-gray-500 py-10">لا توجد فعاليات متاحة حالياً.</div>
-            <?php else: ?>
-                <?php foreach ($events as $event): ?>
-                    <?php
-                    // Skip items that are just page numbers
-                    if (empty($event['details']) && empty($event['time']) && is_numeric(trim($event['title']))) {
-                        continue;
-                    }
-                    ?>
-                    <div
-                        class="event-card bg-white rounded-2xl shadow-md p-5 mb-4 border-r-4 border-blue-500 hover:shadow-lg transition duration-200">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">
-                                <?php echo htmlspecialchars($event['title']); ?>
-                            </h3>
-                            <?php if (!empty($event['page'])): ?>
-                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">ص
-                                    <?php echo htmlspecialchars($event['page']); ?></span>
-                            <?php endif; ?>
-                        </div>
 
-                        <?php if (!empty($event['location'])): ?>
-                            <div class="inline-block bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full mb-3 font-medium">
-                                <?php echo htmlspecialchars($event['location']); ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($event['details'])): ?>
-                            <ul class="text-gray-600 text-sm space-y-1 mb-3 pr-2">
-                                <?php foreach ($event['details'] as $detail): ?>
-                                    <li class="flex items-start">
-                                        <span class="text-blue-500 ml-2">•</span>
-                                        <span><?php echo htmlspecialchars($detail); ?></span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-
-                        <?php if (!empty($event['time'])): ?>
-                            <div class="flex items-center text-blue-600 text-sm font-bold border-t border-gray-100 pt-3 mt-2">
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span dir="ltr"><?php echo htmlspecialchars($event['time']); ?></span>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- Advices Container -->
-        <div id="advicesContainer" class="hidden">
-            <?php if (!empty($advices)): ?>
-                <?php foreach ($advices as $advice): ?>
-                    <div class="bg-white rounded-2xl shadow-md p-6 mb-4 border-r-4 border-yellow-400">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">
-                            <?php echo ($advice['title'] === 'whatsapp_advices') ? 'نصائح هامة' : htmlspecialchars($advice['title']); ?>
+        <!-- Advices Container (visible by default) -->
+        <div id="advicesContainer" class="">
+            <?php if (!empty($halls)): ?>
+                <?php foreach ($halls as $hallKey => $hall): ?>
+                    <div class="advice-hall-card bg-white rounded-2xl shadow-md p-6 mb-4 border-r-4 border-yellow-400"
+                        data-hall-key="<?php echo htmlspecialchars($hallKey); ?>"
+                        data-hall-name="<?php echo htmlspecialchars($hall['name']); ?>">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span class="text-blue-500 text-2xl">📍</span>
+                            <?php echo htmlspecialchars($hall['name']); ?>
                         </h3>
-                        <?php if (!empty($advice['details']) && is_array($advice['details'])): ?>
-                            <ul class="space-y-3">
-                                <?php foreach ($advice['details'] as $detail): ?>
-                                    <?php
-                                    // Check if this is a hall/قاعة or plaza/بلازا reference
-                                    $isHall = preg_match('/^-?قاعة\s*[١٢٣٤٥٦1-6]/u', trim($detail)) ||
-                                        preg_match('/^-قاعة\s/u', trim($detail)) ||
-                                        preg_match('/^-?بلازا\s*[١٢1-2]/u', trim($detail));
-                                    ?>
-                                    <?php if ($isHall): ?>
-                                        <li class="flex items-start bg-blue-100 p-3 rounded-lg border-r-4 border-blue-500">
-                                            <span class="text-blue-600 ml-3 text-xl">📍</span>
-                                            <span class="text-blue-800 font-bold"><?php echo htmlspecialchars($detail); ?></span>
-                                        </li>
-                                    <?php else: ?>
-                                        <li class="flex items-start bg-yellow-50 p-3 rounded-lg">
-                                            <span class="text-yellow-600 ml-3 text-xl">💡</span>
-                                            <span class="text-gray-700 font-medium"><?php echo htmlspecialchars($detail); ?></span>
-                                        </li>
-                                    <?php endif; ?>
+                        <?php if (!empty($hall['tips'])): ?>
+                            <ul class="space-y-2">
+                                <?php foreach ($hall['tips'] as $tip): ?>
+                                    <li class="tip-item flex items-start bg-yellow-50 p-3 rounded-lg hover:bg-yellow-100 transition"
+                                        data-tip-text="<?php echo htmlspecialchars(is_array($tip) ? $tip['text'] : $tip); ?>">
+                                        <span class="text-yellow-600 ml-3 text-lg">💡</span>
+                                        <div class="flex-1">
+                                            <span class="text-gray-700 font-medium">
+                                                <?php echo htmlspecialchars(is_array($tip) ? $tip['text'] : $tip); ?>
+                                            </span>
+                                            <?php if (is_array($tip) && !empty($tip['code'])): ?>
+                                                <span
+                                                    class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded mr-2 font-mono">
+                                                    <?php echo htmlspecialchars($tip['code']); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </li>
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
@@ -185,6 +127,57 @@ require_once 'notes_loader.php';
             <?php else: ?>
                 <div class="text-center text-gray-500 py-10">لا توجد نصائح حالياً</div>
             <?php endif; ?>
+        </div>
+
+        <!-- Event Images Gallery Container -->
+        <div id="imagesContainer" class="hidden">
+            <?php if (!empty($event_images)): ?>
+                <div class="mb-4 text-center">
+                    <p class="text-gray-600 text-sm">اضغط على الصورة للتكبير • اسحب للتنقل</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <?php foreach ($event_images as $img): ?>
+                        <div class="event-image-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer transform hover:scale-105 transition duration-200"
+                            onclick="openImageModal('<?php echo htmlspecialchars($img['image']); ?>', '<?php echo htmlspecialchars($img['title']); ?>')">
+                            <img src="<?php echo htmlspecialchars($img['image']); ?>"
+                                alt="<?php echo htmlspecialchars($img['title']); ?>" class="w-full h-32 object-cover"
+                                loading="lazy">
+                            <div class="p-2">
+                                <p class="text-xs text-gray-700 font-medium text-center truncate">
+                                    <?php echo htmlspecialchars($img['title']); ?>
+                                </p>
+                                <span class="block text-center text-xs text-gray-400">ص
+                                    <?php echo htmlspecialchars($img['page']); ?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="text-center text-gray-500 py-10">لا توجد صور متاحة</div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Image Modal -->
+        <div id="imageModal"
+            class="fixed inset-0 z-[100] bg-black bg-opacity-90 hidden items-center justify-center p-4">
+            <button onclick="closeImageModal()"
+                class="absolute top-4 left-4 text-white text-3xl z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ×
+            </button>
+            <div class="absolute top-4 right-4 text-white text-lg bg-black bg-opacity-50 px-4 py-2 rounded-lg"
+                id="imageModalTitle"></div>
+            <img id="imageModalImage" src="" alt=""
+                class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+                <button onclick="navigateImage(-1)"
+                    class="bg-white text-gray-800 px-6 py-3 rounded-xl shadow-lg hover:bg-gray-100 transition">
+                    ← السابق
+                </button>
+                <button onclick="navigateImage(1)"
+                    class="bg-white text-gray-800 px-6 py-3 rounded-xl shadow-lg hover:bg-gray-100 transition">
+                    التالي →
+                </button>
+            </div>
         </div>
 
         <!-- No Results Message -->
@@ -273,43 +266,67 @@ require_once 'notes_loader.php';
             const rawTerm = e.target.value.trim();
             const searchTerm = normalizeArabic(rawTerm.toLowerCase());
 
-            const eventsBtn = document.getElementById('tab-events');
-            const activeTab = eventsBtn.dataset.active === "true" ? 'events' : 'advices';
-
-            const containerId = activeTab === 'events' ? '#eventsContainer' : '#advicesContainer';
-            const cards = document.querySelectorAll(containerId + ' > div');
-
+            // Advices search - enhanced with hall key matching
+            const hallCards = document.querySelectorAll('#advicesContainer > .advice-hall-card');
             let hasResults = false;
 
-            cards.forEach(card => {
-                // Clear previous highlighting
-                removeHighlight(card);
+            // Convert Arabic numerals to western
+            const hallNumberMap = { '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6' };
+            let normalizedSearchTerm = searchTerm;
+            for (const [ar, en] of Object.entries(hallNumberMap)) {
+                normalizedSearchTerm = normalizedSearchTerm.replace(new RegExp(ar, 'g'), en);
+            }
+
+            hallCards.forEach(hallCard => {
+                const hallKey = hallCard.dataset.hallKey || '';
+                const hallName = normalizeArabic(hallCard.dataset.hallName || '').toLowerCase();
+                const tips = hallCard.querySelectorAll('.tip-item');
 
                 if (searchTerm === '') {
-                    card.classList.remove('hidden');
-                    hasResults = true; // Show all if empty
+                    hallCard.classList.remove('hidden');
+                    tips.forEach(tip => tip.classList.remove('hidden', 'bg-green-100'));
+                    hasResults = true;
                     return;
                 }
 
-                const originalText = card.textContent;
-                const normalizedText = normalizeArabic(originalText.toLowerCase());
+                // Check if search matches hall key or name
+                const matchesHall = hallKey.includes(normalizedSearchTerm) ||
+                    hallName.includes(normalizedSearchTerm) ||
+                    normalizedSearchTerm.includes(hallKey);
 
-                if (normalizedText.includes(searchTerm)) {
-                    card.classList.remove('hidden');
+                // Check individual tips
+                let matchingTips = 0;
+                tips.forEach(tip => {
+                    const tipText = normalizeArabic(tip.dataset.tipText || '').toLowerCase();
+                    const fullText = normalizeArabic(tip.textContent).toLowerCase();
+
+                    if (matchesHall || tipText.includes(normalizedSearchTerm) || fullText.includes(normalizedSearchTerm)) {
+                        tip.classList.remove('hidden');
+                        tip.classList.add('bg-green-100'); // Highlight matching tips
+                        matchingTips++;
+                    } else {
+                        tip.classList.add('hidden');
+                        tip.classList.remove('bg-green-100');
+                    }
+                });
+
+                if (matchesHall || matchingTips > 0) {
+                    hallCard.classList.remove('hidden');
                     hasResults = true;
-                    // Highlight logic
-                    highlightText(card, rawTerm);
+                    // If hall matches, show all tips in that hall
+                    if (matchesHall) {
+                        tips.forEach(tip => {
+                            tip.classList.remove('hidden');
+                            tip.classList.add('bg-green-100');
+                        });
+                    }
                 } else {
-                    card.classList.add('hidden');
+                    hallCard.classList.add('hidden');
                 }
             });
 
             const noResults = document.getElementById('noResults');
-            if (hasResults || searchTerm === '') {
-                noResults.classList.add('hidden');
-            } else {
-                noResults.classList.remove('hidden');
-            }
+            noResults.classList.toggle('hidden', hasResults || searchTerm === '');
         });
 
         // Highlight helper functions
@@ -328,44 +345,104 @@ require_once 'notes_loader.php';
         }
 
         function switchTab(tabName) {
-            const eventsBtn = document.getElementById('tab-events');
             const advicesBtn = document.getElementById('tab-advices');
-            const eventsContainer = document.getElementById('eventsContainer');
+            const imagesBtn = document.getElementById('tab-images');
             const advicesContainer = document.getElementById('advicesContainer');
+            const imagesContainer = document.getElementById('imagesContainer');
             const searchInput = document.getElementById('searchInput');
 
-            if (tabName === 'events') {
-                // Events tab active
-                eventsBtn.className = 'tab-btn flex-1 py-4 text-center text-blue-600 border-b-2 border-blue-600 font-bold focus:outline-none';
-                advicesBtn.className = 'tab-btn bg-gray-100 rounded-t-lg  flex-1 py-4 text-center text-gray-500 font-medium hover:text-yellow-600 focus:outline-none';
+            // Reset all tabs to inactive
+            const inactiveClass = 'tab-btn flex-1 bg-gray-100 rounded-t-lg py-4 text-center text-gray-500 font-medium focus:outline-none';
+            advicesBtn.className = inactiveClass + ' hover:text-yellow-600';
+            imagesBtn.className = inactiveClass + ' hover:text-green-600';
 
-                eventsBtn.dataset.active = "true";
-                advicesBtn.dataset.active = "false";
+            advicesBtn.dataset.active = "false";
+            imagesBtn.dataset.active = "false";
 
-                eventsContainer.classList.remove('hidden');
-                advicesContainer.classList.add('hidden');
-                searchInput.placeholder = "ابحث عن فعالية أو قاعة...";
-            } else {
-                // Advices tab active
-                advicesBtn.className = 'tab-btn flex-1 py-4 text-center text-yellow-600 border-b-2 border-yellow-600 font-bold focus:outline-none';
-                eventsBtn.className = 'tab-btn bg-gray-100 rounded-t-lg  flex-1 py-4 text-center text-gray-500 font-medium hover:text-blue-600 focus:outline-none';
+            // Hide all containers
+            advicesContainer.classList.add('hidden');
+            imagesContainer.classList.add('hidden');
 
+            if (tabName === 'advices') {
+                advicesBtn.className = 'tab-btn flex-1 rounded-t-lg py-4 text-center text-yellow-600 border-b-2 border-yellow-600 font-bold focus:outline-none';
                 advicesBtn.dataset.active = "true";
-                eventsBtn.dataset.active = "false";
-
                 advicesContainer.classList.remove('hidden');
-                eventsContainer.classList.add('hidden');
                 searchInput.placeholder = "ابحث في النصائح...";
+                searchInput.parentElement.classList.remove('hidden');
+            } else if (tabName === 'images') {
+                imagesBtn.className = 'tab-btn flex-1 rounded-t-lg py-4 text-center text-green-600 border-b-2 border-green-600 font-bold focus:outline-none';
+                imagesBtn.dataset.active = "true";
+                imagesContainer.classList.remove('hidden');
+                // Hide search for images tab
+                searchInput.parentElement.classList.add('hidden');
             }
 
             // Reset search
             searchInput.value = '';
-            document.querySelectorAll('#eventsContainer > div, #advicesContainer > div').forEach(el => {
+            document.querySelectorAll('#advicesContainer > div').forEach(el => {
                 el.classList.remove('hidden');
-                // Remove highlighting if implemented
+            });
+            // Reset tip highlighting
+            document.querySelectorAll('.tip-item').forEach(tip => {
+                tip.classList.remove('hidden', 'bg-green-100');
             });
             document.getElementById('noResults').classList.add('hidden');
         }
+
+        // Image Modal Functions
+        let currentImageIndex = 0;
+        const eventImages = <?php echo json_encode($event_images); ?>;
+
+        function openImageModal(imageSrc, title) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('imageModalImage');
+            const titleEl = document.getElementById('imageModalTitle');
+
+            img.src = imageSrc;
+            titleEl.textContent = title;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Find current index
+            currentImageIndex = eventImages.findIndex(e => e.image === imageSrc);
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        function navigateImage(direction) {
+            if (!eventImages || eventImages.length === 0) return;
+
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = eventImages.length - 1;
+            if (currentImageIndex >= eventImages.length) currentImageIndex = 0;
+
+            const img = document.getElementById('imageModalImage');
+            const titleEl = document.getElementById('imageModalTitle');
+            const currentImage = eventImages[currentImageIndex];
+
+            img.src = currentImage.image;
+            titleEl.textContent = currentImage.title;
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeImageModal();
+            if (e.key === 'ArrowLeft') navigateImage(1);
+            if (e.key === 'ArrowRight') navigateImage(-1);
+        });
+
+        // Close modal on background click
+        document.getElementById('imageModal').addEventListener('click', function (e) {
+            if (e.target === this) closeImageModal();
+        });
     </script>
 </body>
 

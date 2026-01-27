@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -90,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .nav-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            padding-bottom: 120px;
         }
     </style>
 </head>
@@ -148,6 +153,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
             </a>
+            <!-- Attendance App Card -->
+            <a href="https://v0-volunteer-attendance-app.vercel.app/" target="_blank"
+                class="nav-card bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-3xl shadow-xl p-6 text-white md:col-span-2">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">تسجيل الحضور</h3>
+                        <p class="text-sm opacity-90">رابط تطبيق تسجيل الحضور والإنصراف</p>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Notes Management Section -->
@@ -185,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="hidden" name="note_index" value="<?php echo $index; ?>">
                                 <button type="submit" name="delete_note"
                                     class="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-lg transition"
-                                    onclick="return confirm('هل أنت متأكد من الحذف؟')">
+                                    onclick="confirmNoteDelete(event, this)">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                         fill="currentColor">
                                         <path fill-rule="evenodd"
@@ -200,11 +221,231 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
+        <!-- Callback Requests Section -->
+        <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-dark mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                طلبات العودة
+                <span id="callback-count"
+                    class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-sm hidden">0</span>
+            </h2>
+
+            <div id="callback-requests-container" class="space-y-3">
+                <div class="text-center text-gray-500 py-4">
+                    <svg class="w-8 h-8 mx-auto mb-2 animate-spin text-gray-300" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    جاري التحميل...
+                </div>
+            </div>
+        </div>
+
         <a href="logout.php"
             class="block w-full text-center bg-red-100 text-red-700 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105 mb-6">
             تسجيل الخروج
         </a>
     </div>
+
+    <!-- Callback Management Script -->
+    <script type="module">
+        import { getCallbackRequests, approveCallbackRequest, rejectCallbackRequest, clearCallbackRequest, assignVolunteer, subscribeToVolunteers } from './js/volunteers-service.js';
+
+        window.confirmNoteDelete = function(e, btn) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: "سيتم حذف التنبيه نهائياً",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'نعم، احذف',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = btn.closest('form');
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'delete_note';
+                    hiddenInput.value = '1';
+                    form.appendChild(hiddenInput);
+                    form.submit();
+                }
+            });
+        };
+
+        async function loadCallbackRequests() {
+            const container = document.getElementById('callback-requests-container');
+            const countBadge = document.getElementById('callback-count');
+
+            try {
+                const requests = await getCallbackRequests();
+
+                if (requests.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-gray-500 py-6">
+                            <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            لا توجد طلبات عودة حالياً
+                        </div>
+                    `;
+                    countBadge.classList.add('hidden');
+                    return;
+                }
+
+                countBadge.textContent = requests.length;
+                countBadge.classList.remove('hidden');
+
+                container.innerHTML = requests.map(r => {
+                    const date = r.callback_comment_date ? new Date(r.callback_comment_date).toLocaleString('ar-EG') : 'غير محدد';
+                    return `
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100" data-code="${r.volunteerCode}">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-bold text-dark">${r.name}</h4>
+                                    <span class="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">${r.volunteerCode}</span>
+                                    <span class="text-xs text-gray-400 mr-2">${r.group || ''}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-400">${date}</span>
+                                    <button onclick="handleDelete('${r.volunteerCode}')" title="حذف الطلب"
+                                        class="text-gray-400 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-sm bg-white p-3 rounded-lg border mb-3">${r.callback_comment || 'لا توجد رسالة'}</p>
+                            <div class="flex gap-2">
+                                <button onclick="handleApprove('${r.volunteerCode}')"
+                                    class="flex-1 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    موافقة
+                                </button>
+                                <button onclick="handleReject('${r.volunteerCode}')"
+                                    class="flex-1 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                    </svg>
+                                    رفض
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading callback requests:', error);
+                container.innerHTML = '<p class="text-red-500 text-center py-4">حدث خطأ أثناء تحميل الطلبات</p>';
+            }
+        }
+
+        window.handleApprove = async (volunteerCode) => {
+            const result = await Swal.fire({
+                title: 'تأكيد الموافقة',
+                text: 'هل تريد الموافقة على هذا الطلب؟',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'نعم، موافقة',
+                cancelButtonText: 'إلغاء'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const success = await approveCallbackRequest(volunteerCode);
+            if (success) {
+                await loadCallbackRequests();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم بنجاح',
+                    text: 'تمت الموافقة على الطلب',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('خطأ', 'حدث خطأ أثناء الموافقة على الطلب', 'error');
+            }
+        };
+
+        window.handleReject = async (volunteerCode) => {
+            const result = await Swal.fire({
+                title: 'تأكيد الرفض',
+                text: 'هل تريد رفض هذا الطلب؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'نعم، رفض',
+                cancelButtonText: 'إلغاء'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const success = await rejectCallbackRequest(volunteerCode);
+            if (success) {
+                await loadCallbackRequests();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الرفض',
+                    text: 'تم رفض الطلب بنجاح',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('خطأ', 'حدث خطأ أثناء رفض الطلب', 'error');
+            }
+        };
+
+        window.handleDelete = async (volunteerCode) => {
+            const result = await Swal.fire({
+                title: 'تأكيد الحذف',
+                text: 'هل تريد حذف هذا الطلب نهائياً؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'نعم، حذف',
+                cancelButtonText: 'إلغاء'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const success = await clearCallbackRequest(volunteerCode);
+            if (success) {
+                await loadCallbackRequests();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الحذف',
+                    text: 'تم حذف الطلب بنجاح',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('خطأ', 'حدث خطأ أثناء حذف الطلب', 'error');
+            }
+        };
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadCallbackRequests);
+
+        // Subscribe to realtime updates
+        subscribeToVolunteers((payload) => {
+            // Reload if callback status changed
+            if (payload.new?.callback_comment_approval !== payload.old?.callback_comment_approval) {
+                loadCallbackRequests();
+            }
+        });
+    </script>
 
     <!-- Bottom Navigation -->
     <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">

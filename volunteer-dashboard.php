@@ -29,7 +29,7 @@ require_once 'notes_loader.php';
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-bottom: env(safe-area-inset-bottom, 120px);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -151,6 +151,17 @@ require_once 'notes_loader.php';
     <!-- Notes Ticker -->
     <?php include 'notes_ticker.php'; ?>
 
+    <!-- Callback Status Banner (dynamically shown) -->
+    <div id="callback-banner" class="max-w-md mx-auto px-4 hidden">
+        <div id="callback-banner-content" class="rounded-xl p-4 mb-4 flex items-center gap-3 shadow-lg">
+            <span id="callback-banner-icon"></span>
+            <div>
+                <p id="callback-banner-title" class="font-bold"></p>
+                <p id="callback-banner-text" class="text-sm opacity-90"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="max-w-md mx-auto px-4 py-6 pb-24">
         <!-- Google Drive Viewer -->
@@ -205,42 +216,108 @@ require_once 'notes_loader.php';
             </div>
         </div>
 
-        <!-- Current Tasks -->
+        <!-- Add New Tip Form -->
         <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
-            <h2 class="text-xl font-bold text-dark mb-4">المهام الموكلة (التدوير)</h2>
+            <h2 class="text-xl font-bold text-dark mb-4 flex items-center gap-2">
+                <span class="bg-yellow-100 p-2 rounded-lg text-yellow-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </span>
+                إضافة نصيحة جديدة
+            </h2>
 
-            <div class="space-y-3" id="tasks-container">
-                <?php
-                $tasks = [
-                    ['name' => $volunteer_loc1, 'time' => $volunteer_period, 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-                    ['name' => $volunteer_loc2, 'time' => 'التدوير التالي', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
-                    ['name' => $volunteer_loc3, 'time' => 'التدوير التالي', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
-                    ['name' => $volunteer_loc4, 'time' => 'التدوير الأخير', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2']
-                ];
+            <?php
+            // Load hall names from JSON
+            $halls_advices_path = 'json_files/halls_advices.json';
+            $halls_data = [];
+            if (file_exists($halls_advices_path)) {
+                $content = file_get_contents($halls_advices_path);
+                if (strpos($content, "\xEF\xBB\xBF") === 0)
+                    $content = substr($content, 3);
+                $json = json_decode($content, true);
+                $halls_data = $json['halls'] ?? [];
+            }
+            ?>
 
-                foreach ($tasks as $task):
-                    if ($task['name'] === 'N/A')
-                        continue;
-                    ?>
-                    <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                        <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="<?php echo $task['icon']; ?>"></path>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-semibold text-dark"><?php echo htmlspecialchars($task['name']); ?></h3>
-                            <p class="text-sm text-gray-600"><?php echo htmlspecialchars($task['time']); ?></p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+            <form id="addTipForm" class="space-y-4" onsubmit="submitAdvice(event)">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">القاعة</label>
+                    <select id="tipHall" required
+                        class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-gray-50">
+                        <option value="">اختر القاعة...</option>
+                        <?php foreach ($halls_data as $key => $hall): ?>
+                            <option value="<?php echo htmlspecialchars($key); ?>">
+                                <?php echo htmlspecialchars($hall['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                <?php if ($volunteer_loc1 == 'N/A'): ?>
-                    <p class="text-center text-gray-500">لا توجد مهام محددة حالياً</p>
-                <?php endif; ?>
-            </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">دار النشر / النصيحة</label>
+                    <input type="text" id="tipText" required placeholder="مثال: دار الشروق"
+                        class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-gray-50">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">الكود (اختياري)</label>
+                    <input type="text" id="tipCode" placeholder="مثال: A15"
+                        class="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-gray-50">
+                </div>
+
+                <div id="tipMessage" class="hidden p-3 rounded-xl text-sm font-bold text-center"></div>
+
+                <button type="submit"
+                    class="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95">
+                    إضافة
+                </button>
+            </form>
         </div>
+
+        <script>
+            async function submitAdvice(e) {
+                e.preventDefault();
+                const btn = e.target.querySelector('button[type="submit"]');
+                const msg = document.getElementById('tipMessage');
+                const hall = document.getElementById('tipHall').value;
+                const text = document.getElementById('tipText').value;
+                const code = document.getElementById('tipCode').value;
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="animate-pulse">جاري الإضافة...</span>';
+                msg.classList.add('hidden');
+
+                try {
+                    const response = await fetch('add_advice.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ hall, text, code })
+                    });
+
+                    const result = await response.json();
+
+                    msg.textContent = result.message;
+                    msg.classList.remove('hidden');
+
+                    if (result.success) {
+                        msg.className = 'p-3 rounded-xl text-sm font-bold text-center bg-green-100 text-green-700';
+                        document.getElementById('addTipForm').reset();
+                        setTimeout(() => msg.classList.add('hidden'), 3000);
+                    } else {
+                        msg.className = 'p-3 rounded-xl text-sm font-bold text-center bg-red-100 text-red-700';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    msg.textContent = 'حدث خطأ في الاتصال';
+                    msg.className = 'p-3 rounded-xl text-sm font-bold text-center bg-red-100 text-red-700';
+                    msg.classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'إضافة';
+                }
+            }
+        </script>
 
         <!-- CTA Button -->
         <a href="halls.php"
@@ -412,6 +489,43 @@ require_once 'notes_loader.php';
             } else {
                 els.container.classList.add('hidden');
                 els.noLocMsg.classList.remove('hidden');
+            }
+
+            // Update callback banner
+            updateCallbackBanner(data);
+        }
+
+        function updateCallbackBanner(data) {
+            const banner = document.getElementById('callback-banner');
+            const content = document.getElementById('callback-banner-content');
+            const icon = document.getElementById('callback-banner-icon');
+            const title = document.getElementById('callback-banner-title');
+            const text = document.getElementById('callback-banner-text');
+
+            const status = data.callback_comment_approval;
+
+            if (!status) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            banner.classList.remove('hidden');
+
+            if (status === 'pending') {
+                content.className = 'rounded-xl p-4 mb-4 flex items-center gap-3 shadow-lg bg-yellow-500 text-white';
+                icon.innerHTML = '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>';
+                title.textContent = 'طلب العودة قيد المراجعة';
+                text.textContent = 'سيتم إشعارك عند الرد على طلبك';
+            } else if (status === 'approved') {
+                content.className = 'rounded-xl p-4 mb-4 flex items-center gap-3 shadow-lg bg-green-500 text-white';
+                icon.innerHTML = '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+                title.textContent = 'تمت الموافقة على طلبك! 🎉';
+                text.textContent = 'تواصل مع الإدارة لتعيينك في موقع جديد';
+            } else if (status === 'rejected') {
+                content.className = 'rounded-xl p-4 mb-4 flex items-center gap-3 shadow-lg bg-red-500 text-white';
+                icon.innerHTML = '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+                title.textContent = 'تم رفض طلب العودة';
+                text.textContent = 'يمكنك تقديم طلب جديد من الملف الشخصي';
             }
         }
 

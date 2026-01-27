@@ -380,42 +380,21 @@ window.assignVolunteerToSpot = async function (lat, lng) {
  * Remove volunteer from spot (called from popup)
  */
 window.removeVolunteerFromSpot = async function (volunteerCode) {
-  const modal = document.getElementById("remove-confirm-modal");
-  const confirmBtn = document.getElementById("confirm-remove-btn");
-  const cancelBtn = document.getElementById("cancel-remove-btn");
-
-  if (!modal || !confirmBtn || !cancelBtn) {
-    // Fallback if modal not present
-    if (!confirm("هل أنت متأكد من إزالة المتطوع من هذا الموقع؟")) return;
-    return proceedRemoval(volunteerCode);
-  }
-
-  // Show modal
-  modal.classList.remove("hidden");
-  modal.classList.add("flex");
-
-  return new Promise((resolve) => {
-    const handleConfirm = async () => {
-      cleanup();
-      await proceedRemoval(volunteerCode);
-      resolve(true);
-    };
-
-    const handleCancel = () => {
-      cleanup();
-      resolve(false);
-    };
-
-    const cleanup = () => {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-      confirmBtn.removeEventListener("click", handleConfirm);
-      cancelBtn.removeEventListener("click", handleCancel);
-    };
-
-    confirmBtn.addEventListener("click", handleConfirm);
-    cancelBtn.addEventListener("click", handleCancel);
+  // Use SweetAlert2 for confirmation
+  const result = await Swal.fire({
+    title: "تأكيد الإزالة",
+    text: "هل أنت متأكد من إزالة المتطوع من هذا الموقع؟",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#EF4444",
+    cancelButtonColor: "#6B7280",
+    confirmButtonText: "نعم، إزالة",
+    cancelButtonText: "إلغاء",
   });
+
+  if (!result.isConfirmed) return;
+
+  return proceedRemoval(volunteerCode);
 };
 
 /**
@@ -433,17 +412,16 @@ async function proceedRemoval(volunteerCode) {
     // Auto-capture and upload map screenshot
     await autoSaveMapScreenshot();
 
-    // Show success modal instead of immediate reload
-    const successModal = document.getElementById("success-feedback-modal");
-    if (successModal) {
-      successModal.classList.remove("hidden");
-      successModal.classList.add("flex");
-    } else {
-      showToast("تمت الإزالة بنجاح", "success");
-      location.reload();
-    }
+    // Show success feedback
+    Swal.fire({
+      icon: "success",
+      title: "تمت الإزالة",
+      text: "تم إزالة المتطوع من الموقع بنجاح",
+      timer: 1500,
+      showConfirmButton: false,
+    });
   } else {
-    showToast("حدث خطأ في الإزالة", "error");
+    Swal.fire("خطأ", "حدث خطأ في الإزالة", "error");
   }
 }
 

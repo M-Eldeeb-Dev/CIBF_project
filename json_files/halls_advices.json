@@ -1,0 +1,527 @@
+{
+    "halls": {
+        "1": {
+            "name": "قاعة 1",
+            "tips": [
+                {
+                    "text": "ببلومانيا (لكتب الادب الانجليزي)",
+                    "code": "A59"
+                },
+                {
+                    "text": "مكتبات الشروق (لكتب انجليزية كل الانواع)",
+                    "code": "B57"
+                },
+                {
+                    "text": "كتب المانجا",
+                    "code": ""
+                },
+                {
+                    "text": "عصير الكتب للنشر",
+                    "code": "B38"
+                },
+                {
+                    "text": "دار كيان",
+                    "code": "B22"
+                },
+                {
+                    "text": "دار الكرمة",
+                    "code": "B25"
+                },
+                {
+                    "text": "المكتبة المصرية اللبنانية",
+                    "code": "B10"
+                },
+                {
+                    "text": "دار دَون و دار التدوين العربي",
+                    "code": "B11"
+                }
+            ]
+        },
+        "2": {
+            "name": "قاعة 2",
+            "tips": [
+                {
+                    "text": "دار دَون و دار التدوين العربي",
+                    "code": "B8"
+                },
+                {
+                    "text": "آفاق للنشر",
+                    "code": "51"
+                },
+                {
+                    "text": "دار القدس",
+                    "code": ""
+                },
+                {
+                    "text": "دارك للنشر",
+                    "code": "B6"
+                },
+                {
+                    "text": "نهضة مصر",
+                    "code": "B12"
+                },
+                {
+                    "text": "الشرق الاوسط للعلوم الطبية و الكتب",
+                    "code": "68"
+                },
+                {
+                    "text": "دار الإشراقة",
+                    "code": "C45"
+                },
+                {
+                    "text": "كتب اجنبية و مترجمة",
+                    "code": ""
+                },
+                {
+                    "text": "الكتاب المقدس للكبار",
+                    "code": "C32"
+                },
+                {
+                    "text": "مكتبة عصير الكتب للأدوات",
+                    "code": "B35"
+                }
+            ]
+        },
+        "3": {
+            "name": "قاعة 3 - قاعة ضيف الشرف (رومانيا)",
+            "tips": [
+                {
+                    "text": "الهيئة المصرية",
+                    "code": "B38"
+                },
+                {
+                    "text": "وزارة التضامن",
+                    "code": "B42"
+                },
+                {
+                    "text": "وزارة الرياضة و الشباب",
+                    "code": "B26"
+                },
+                {
+                    "text": "دور النشر للكتب العربية (عمان، ابوظبي، السعودية، فلسطين...)",
+                    "code": "A32"
+                },
+                {
+                    "text": "دار مانجا السعودية (جناح B، قريب من باب الهلال الاحمر)",
+                    "code": "B"
+                },
+                {
+                    "text": "السفارة الامريكية",
+                    "code": "B57"
+                },
+                {
+                    "text": "المركز القومي لذوي الإعاقة (شمال السفارة الامريكية)",
+                    "code": "B21"
+                },
+                {
+                    "text": "دار الشارقة",
+                    "code": "B"
+                },
+                {
+                    "text": "اندومي - سفارة إندونيسيا",
+                    "code": "A31"
+                },
+                {
+                    "text": "ان لو اتصورت مع نوح ممكن اللي عند حماة الارض ممكن تكسب اسكوتر",
+                    "code": "B25"
+                },
+                {
+                    "text": "وزارة الشباب والرياضة للقاعة 3",
+                    "code": "B24"
+                }
+            ]
+        },
+        "4": {
+            "name": "قاعة 4",
+            "tips": [
+                {
+                    "text": "دار الافتاء و الازهر",
+                    "code": ""
+                },
+                {
+                    "text": "انمي هاوس (مع دار الجمهورية)",
+                    "code": "B9"
+                }
+            ]
+        },
+        "5": {
+            "name": "قاعة 5 - قاعة الطفل",
+            "tips": [
+                {
+                    "text": "شارع العلوم و التكنولوجيا (القاعة التانية اللي في الآخر)",
+                    "code": "B46"
+                },
+                {
+                    "text": "منطقة الطفل\/نشاط الطفل (في القاعة التانية اللي ورا)",
+                    "code": ""
+                },
+                {
+                    "text": "دار الكتاب المقدس للطفل",
+                    "code": "B32"
+                },
+                {
+                    "text": "سلاح تلميذ، كتب لغات اجنبية",
+                    "code": "A37"
+                },
+                {
+                    "text": "كتب تعليم",
+                    "code": ""
+                },
+                {
+                    "text": "معارف و نهضة مصر",
+                    "code": ""
+                },
+                {
+                    "text": "منطقة الطفل في اخر القاعة",
+                    "code": ""
+                },
+                {
+                    "text": "شارع العلوم",
+                    "code": ""
+                },
+                {
+                    "text": "Nagwa",
+                    "code": ""
+                },
+                {
+                    "text": "سهل للنشر و تكنولوجيا المعلومات",
+                    "code": "B28"
+                },
+                {
+                    "text": "البرج ميديا للطباعه والنشر والتوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "مؤسسة ناهد الشوا الثقافة كندا",
+                    "code": ""
+                },
+                {
+                    "text": "هيئة الخدمات الروحية",
+                    "code": ""
+                },
+                {
+                    "text": "دار الكتاب المقدس",
+                    "code": ""
+                },
+                {
+                    "text": "دار الكوثر للنشر والتوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "أرجوحة",
+                    "code": "B45"
+                },
+                {
+                    "text": "المكتبة الأكاديمية",
+                    "code": "B35"
+                },
+                {
+                    "text": "دار حكايات",
+                    "code": ""
+                },
+                {
+                    "text": "مكتبات البحر الاحمر",
+                    "code": ""
+                },
+                {
+                    "text": "المؤسسة الدولية للنشر والتوزيع",
+                    "code": "B43"
+                },
+                {
+                    "text": "دار البلسم للنشر والتوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "ومضه للنشر والتوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "مؤسسة المبدع الصغير",
+                    "code": ""
+                },
+                {
+                    "text": "مركز عباقرة للنشر والتوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "المبتكر الصغير",
+                    "code": ""
+                },
+                {
+                    "text": "الأضواء و الامتحان و التلميذ",
+                    "code": ""
+                },
+                {
+                    "text": "شركة نور لإنتاج التعليمي",
+                    "code": ""
+                },
+                {
+                    "text": "دار الوليد",
+                    "code": ""
+                },
+                {
+                    "text": "وكالة الأهرام التوزيع",
+                    "code": ""
+                },
+                {
+                    "text": "مؤسسة دار المعارف",
+                    "code": ""
+                },
+                {
+                    "text": "دار العزيز للنشر",
+                    "code": ""
+                },
+                {
+                    "text": "في الأضواء دار نهضة مصر",
+                    "code": ""
+                },
+                {
+                    "text": "العالية للخدمات التعليمية",
+                    "code": "A40"
+                },
+                {
+                    "text": "الهيئة المصرية العامة للكتاب",
+                    "code": ""
+                },
+                {
+                    "text": "دار المشرق",
+                    "code": ""
+                },
+                {
+                    "text": "دار المستقبل",
+                    "code": ""
+                },
+                {
+                    "text": "المركز المصري الأمريكي للكتاب",
+                    "code": "A30"
+                },
+                {
+                    "text": "شركة فلافي بيير",
+                    "code": ""
+                },
+                {
+                    "text": "سمارت كيدز",
+                    "code": ""
+                },
+                {
+                    "text": "تحدي القراءة العربي",
+                    "code": ""
+                },
+                {
+                    "text": "مؤسسة طفلي",
+                    "code": ""
+                }
+            ]
+        },
+        "6": {
+            "name": "قاعة 6 - الكتب المخفضة",
+            "tips": [
+                {
+                    "text": "كتب موقعة و ذات تراث",
+                    "code": ""
+                },
+                {
+                    "text": "الازبكية بجانب قاعة 5",
+                    "code": ""
+                }
+            ]
+        },
+        "plaza1": {
+            "name": "بلازا 1",
+            "tips": [
+                {
+                    "text": "القاعه الدولية",
+                    "code": ""
+                },
+                {
+                    "text": "كاتب وكتاب",
+                    "code": ""
+                },
+                {
+                    "text": "المؤتمرات",
+                    "code": ""
+                },
+                {
+                    "text": "الندوات المتخصصة",
+                    "code": ""
+                },
+                {
+                    "text": "ديوان الشعر",
+                    "code": ""
+                },
+                {
+                    "text": "ملتقى الابداع",
+                    "code": ""
+                },
+                {
+                    "text": "مبادرة مكتبة لكل بيت",
+                    "code": ""
+                }
+            ]
+        },
+        "plaza2": {
+            "name": "بلازا 2",
+            "tips": [
+                {
+                    "text": "القاعه الدولية",
+                    "code": ""
+                },
+                {
+                    "text": "الصالون الثقافى",
+                    "code": ""
+                }
+            ]
+        },
+        "other": {
+            "name": "مكانة أخرى تقام بها الفعاليات",
+            "tips": [
+                {
+                    "text": "مخيم أهلنا وناسنا",
+                    "code": ""
+                },
+                {
+                    "text": "النشاط الفنى (على المسرح الصغير والكبير)",
+                    "code": ""
+                },
+                {
+                    "text": "نشاط الطفل",
+                    "code": ""
+                },
+                {
+                    "text": "البنك الاهلي قدام بوابات 3 و 4",
+                    "code": ""
+                }
+            ]
+        },
+        "egybook": {
+            "name": "الهيئة المصرية العامة للكتاب",
+            "tips": [
+                {
+                    "text": "قاعه 1 الرئيسية",
+                    "code": "B1"
+                },
+                {
+                    "text": "قاعه 2 (اجنبي)",
+                    "code": "C66"
+                }
+            ]
+        }
+    },
+    "event_images": [
+        {
+            "page": 143,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-143.jpg"
+        },
+        {
+            "page": 144,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-144.jpg"
+        },
+        {
+            "page": 145,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-145.jpg"
+        },
+        {
+            "page": 146,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-146.jpg"
+        },
+        {
+            "page": 147,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-147.jpg"
+        },
+        {
+            "page": 148,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-148.jpg"
+        },
+        {
+            "page": 149,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-149.jpg"
+        },
+        {
+            "page": 150,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-150.jpg"
+        },
+        {
+            "page": 151,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-151.jpg"
+        },
+        {
+            "page": 152,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-152.jpg"
+        },
+        {
+            "page": 153,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-153.jpg"
+        },
+        {
+            "page": 154,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-154.jpg"
+        },
+        {
+            "page": 155,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-155.jpg"
+        },
+        {
+            "page": 156,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-156.jpg"
+        },
+        {
+            "page": 157,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-157.jpg"
+        },
+        {
+            "page": 158,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-158.jpg"
+        },
+        {
+            "page": 159,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-159.jpg"
+        },
+        {
+            "page": 160,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-160.jpg"
+        },
+        {
+            "page": 161,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-161.jpg"
+        },
+        {
+            "page": 162,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-162.jpg"
+        },
+        {
+            "page": 163,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-163.jpg"
+        },
+        {
+            "page": 164,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-164.jpg"
+        },
+        {
+            "page": 165,
+            "title": "Wednesday 28, 2026",
+            "image": "event_images\/program 2026 ok-pages-images-165.jpg"
+        }
+    ]
+}

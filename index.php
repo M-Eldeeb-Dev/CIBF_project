@@ -164,7 +164,7 @@ if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Register Link -->
         <div class="text-center mb-6">
-            <p class="text-gray-600">ليس لديك كود؟ <a href="https://wa.me/+201021325101"
+            <p class="text-gray-600">ليس لديك كود؟ <a href="https://wa.me/+201126941087"
                     class="text-primary font-bold">تواصل مع الإدارة</a></p>
         </div>
 

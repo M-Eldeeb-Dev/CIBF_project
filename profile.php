@@ -22,10 +22,11 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-bottom: env(safe-area-inset-bottom, 120px);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -128,6 +129,78 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             </div>
         </div>
 
+        <!-- Callback Request Section (shown when volunteer has no location) -->
+        <div id="callback-request-section" class="bg-white rounded-3xl shadow-xl p-6 mb-6 hidden">
+            <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                طلب العودة
+            </h3>
+
+            <!-- Status Display -->
+            <div id="callback-status-display" class="hidden mb-4">
+                <div id="callback-pending" class="hidden bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2 text-yellow-700 font-bold">
+                            <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            طلبك قيد المراجعة
+                        </div>
+                        <button id="cancel-callback-btn" onclick="cancelCallbackRequest()"
+                            class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 bg-red-50 px-3 py-1 rounded-lg hover:bg-red-100 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            إلغاء الطلب
+                        </button>
+                    </div>
+                    <p class="text-gray-600 text-sm" id="callback-pending-comment"></p>
+                    <p class="text-gray-400 text-xs mt-2" id="callback-pending-date"></p>
+                </div>
+
+                <div id="callback-approved" class="hidden bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2 text-green-700 font-bold">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        تمت الموافقة على طلبك!
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">يرجى إنتظار الإدارة لتعيينك في موقع جديد.</p>
+                </div>
+
+                <div id="callback-rejected" class="hidden bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2 text-red-700 font-bold">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        تم رفض طلبك
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">يمكنك تقديم طلب جديد.</p>
+                </div>
+            </div>
+
+            <!-- Request Form -->
+            <div id="callback-form" class="hidden">
+                <p class="text-gray-600 text-sm mb-4">لم يتم تعيينك في موقع حالياً. يمكنك إرسال طلب للإدارة للعودة:</p>
+                <textarea id="callback-comment-input"
+                    class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                    rows="3" placeholder="اكتب رسالتك للإدارة هنا..."></textarea>
+                <button id="submit-callback-btn"
+                    class="w-full mt-3 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+                    إرسال طلب العودة
+                </button>
+            </div>
+        </div>
+
         <a href="logout.php"
             class="block w-full text-center bg-red-100 text-red-700 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
             تسجيل الخروج
@@ -190,7 +263,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
 
     <!-- Load real-time data from Supabase -->
     <script type="module">
-        import { getVolunteerByCode, subscribeToVolunteers } from './js/volunteers-service.js';
+        import { getVolunteerByCode, subscribeToVolunteers, submitCallbackRequest, deleteCallbackRequest } from './js/volunteers-service.js';
 
         const volunteerCode = '<?php echo addslashes($volunteer_code); ?>';
 
@@ -199,6 +272,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
                 const data = await getVolunteerByCode(volunteerCode);
                 if (data) {
                     updateUI(data);
+                    updateCallbackSection(data);
                 }
             } catch (error) {
                 console.error('Error loading volunteer data:', error);
@@ -256,6 +330,131 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             }
         }
 
+        function updateCallbackSection(data) {
+            const section = document.getElementById('callback-request-section');
+            const statusDisplay = document.getElementById('callback-status-display');
+            const form = document.getElementById('callback-form');
+            const pendingDiv = document.getElementById('callback-pending');
+            const approvedDiv = document.getElementById('callback-approved');
+            const rejectedDiv = document.getElementById('callback-rejected');
+
+            // Check if volunteer has no current location
+            const hasLocation = data.is_present || data.is_occupied || (data.current_loc && data.current_loc !== '');
+
+            if (hasLocation) {
+                // If volunteer has a location, hide the entire callback section
+                section.classList.add('hidden');
+                return;
+            }
+
+            // Show callback section
+            section.classList.remove('hidden');
+
+            // Hide all status divs first
+            pendingDiv.classList.add('hidden');
+            approvedDiv.classList.add('hidden');
+            rejectedDiv.classList.add('hidden');
+
+            // Check callback status
+            const status = data.callback_comment_approval;
+
+            if (status === 'pending') {
+                statusDisplay.classList.remove('hidden');
+                form.classList.add('hidden');
+                pendingDiv.classList.remove('hidden');
+                document.getElementById('callback-pending-comment').textContent = data.callback_comment || '';
+                if (data.callback_comment_date) {
+                    const date = new Date(data.callback_comment_date);
+                    document.getElementById('callback-pending-date').textContent = `تاريخ الطلب: ${date.toLocaleDateString('ar-EG')} ${date.toLocaleTimeString('ar-EG')}`;
+                }
+            } else if (status === 'approved') {
+                statusDisplay.classList.remove('hidden');
+                form.classList.add('hidden');
+                approvedDiv.classList.remove('hidden');
+            } else if (status === 'rejected') {
+                statusDisplay.classList.remove('hidden');
+                form.classList.remove('hidden');
+                rejectedDiv.classList.remove('hidden');
+            } else {
+                // No request yet - show form
+                statusDisplay.classList.add('hidden');
+                form.classList.remove('hidden');
+            }
+        }
+
+        // Handle callback form submission
+        document.getElementById('submit-callback-btn').addEventListener('click', async () => {
+            const comment = document.getElementById('callback-comment-input').value.trim();
+            if (!comment) {
+                Swal.fire('تنبيه', 'يرجى كتابة رسالة للإدارة', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('submit-callback-btn');
+            btn.disabled = true;
+            btn.textContent = 'جاري الإرسال...';
+
+            const success = await submitCallbackRequest(volunteerCode, comment);
+
+            if (success) {
+                btn.textContent = 'تم الإرسال ✓';
+                btn.className = 'w-full mt-3 py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg';
+                // Reload data to update UI
+                await loadVolunteerData();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الإرسال',
+                    text: 'تم إرسال طلبك للإدارة بنجاح',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'إرسال طلب العودة';
+                Swal.fire('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.', 'error');
+            }
+        });
+
+        // Handle callback cancellation (delete own pending request)
+        window.cancelCallbackRequest = async function () {
+            const result = await Swal.fire({
+                title: 'تأكيد الإلغاء',
+                text: 'هل أنت متأكد من إلغاء طلب العودة؟',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'نعم، إلغاء الطلب',
+                cancelButtonText: 'تراجع'
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const btn = document.getElementById('cancel-callback-btn');
+            btn.disabled = true;
+            btn.textContent = 'جاري الإلغاء...';
+
+            const success = await deleteCallbackRequest(volunteerCode);
+
+            if (success) {
+                // Reload data to update UI
+                await loadVolunteerData();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الإلغاء',
+                    text: 'تم إلغاء طلبك بنجاح',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg> إلغاء الطلب`;
+                Swal.fire('خطأ', 'حدث خطأ أثناء إلغاء الطلب. يرجى المحاولة مرة أخرى.', 'error');
+            }
+        };
+
         // Initial load
         loadVolunteerData();
 
@@ -263,6 +462,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
         subscribeToVolunteers((payload) => {
             if (payload.new?.volunteerCode === volunteerCode) {
                 updateUI(payload.new);
+                updateCallbackSection(payload.new);
             }
         });
     </script>

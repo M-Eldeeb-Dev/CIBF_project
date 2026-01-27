@@ -17,7 +17,7 @@ requireAuth('admin');
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-bottom: env(safe-area-inset-bottom, 120px);
             -webkit-tap-highlight-color: transparent;
         }
 

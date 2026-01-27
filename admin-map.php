@@ -7,7 +7,7 @@ requireAuth('admin');
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="300">
+    <!-- Removed auto-refresh - using Supabase realtime instead for better UX -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>إدارة الخرائط - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,10 +16,11 @@ requireAuth('admin');
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-bottom: env(safe-area-inset-bottom, 120px);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -374,7 +375,8 @@ requireAuth('admin');
                             <th class="p-3 rounded-tr-xl">المتطوع</th>
                             <th class="p-3">المجموعة</th>
                             <th class="p-3">السبب</th>
-                            <th class="p-3 rounded-tl-xl text-left">التاريخ</th>
+                            <th class="p-3 text-left">التاريخ</th>
+                            <th class="p-3 rounded-tl-xl"></th>
                         </tr>
                     </thead>
                     <tbody id="reasons-log-body">
@@ -514,7 +516,7 @@ requireAuth('admin');
 
     <script type="module">
         import { initMap, switchHall, enableSpotCreation, getCurrentHall } from './js/leaflet-map.js';
-        import { getAllVolunteers, subscribeToVolunteers, assignVolunteer } from './js/volunteers-service.js';
+        import { getAllVolunteers, subscribeToVolunteers, assignVolunteer, clearDeleteReason } from './js/volunteers-service.js';
 
         let currentActiveTab = 1;
         let allVolunteers = [];
@@ -756,14 +758,14 @@ requireAuth('admin');
             if (volunteers.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="p-4 text-center text-gray-500">لا توجد سجلات حالياً</td>
+                        <td colspan="5" class="p-4 text-center text-gray-500">لا توجد سجلات حالياً</td>
                     </tr>
                 `;
                 return;
             }
 
             tbody.innerHTML = volunteers.map(v => {
-                const date = v.reasons_date || 'غير مسجل';
+                const date = v.reasons_date ? new Date(v.reasons_date).toLocaleString('ar-EG') : 'غير مسجل';
                 return `
                     <tr class="border-b hover:bg-gray-50 transition">
                         <td class="p-3 font-semibold text-dark">${v.name}</td>
@@ -774,10 +776,48 @@ requireAuth('admin');
                             </span>
                         </td>
                         <td class="p-3 text-gray-500 text-xs" dir="ltr">${date}</td>
+                        <td class="p-3">
+                            <button onclick="handleDeleteReason('${v.volunteerCode}')" 
+                                class="text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition"
+                                title="حذف السجل">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </td>
                     </tr>
                 `;
             }).join('');
         }
+
+        window.handleDeleteReason = async (volunteerCode) => {
+            const result = await Swal.fire({
+                title: 'تأكيد الحذف',
+                text: 'هل أنت متأكد من حذف هذا السجل؟',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'نعم، حذف',
+                cancelButtonText: 'إلغاء'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const success = await clearDeleteReason(volunteerCode);
+            if (success) {
+                await loadReasonsLog();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الحذف',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire('خطأ', 'حدث خطأ أثناء حذف السجل', 'error');
+            }
+        };
 
         // Switch hall function (exposed globally)
         window.switchToHall = async function (hallId) {
