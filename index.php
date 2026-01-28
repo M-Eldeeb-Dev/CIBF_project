@@ -1,15 +1,13 @@
 <?php
-// Set session cookie lifetime to 1 day (86400 seconds)
-ini_set('session.cookie_lifetime', 86400);
-ini_set('session.gc_maxlifetime', 86400);
-session_start();
+// Include auth guard for consistent session configuration
+require_once __DIR__ . '/includes/auth-guard.php';
 
 // Check if user is already logged in
-if (isset($_SESSION['user_type'])) {
-    if ($_SESSION['user_type'] === 'admin') {
+if (isAuthenticated()) {
+    if (isAdmin()) {
         header('Location: admin-dashboard.php');
         exit;
-    } elseif ($_SESSION['user_type'] === 'volunteer') {
+    } elseif (isVolunteer()) {
         header('Location: volunteer-dashboard.php');
         exit;
     }
@@ -20,7 +18,7 @@ $useSupabase = true; // Set to false to use PHP fallback
 
 // PHP fallback authentication (used when Supabase is not available)
 if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once 'volunteers_data.php';
+    require_once __DIR__ . '/config/volunteers_data.php';
     $code = trim($_POST['code'] ?? '');
     $code = preg_replace('/^O-\s*/', 'O-', strtoupper($code));
 
@@ -62,7 +60,7 @@ if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -116,13 +114,13 @@ if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body class="bg-light min-h-screen">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
     <div class="max-w-md mx-auto px-4 py-8">
         <!-- Logo Section -->
         <div class="text-center mb-8">
             <div class="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                <img src="images/logo.jpg" alt="Logo" class="rounded-2xl shadow-lg w-full h-full object-cover">
+                <img src="assets/images/logo.jpg" alt="Logo" class="rounded-2xl shadow-lg w-full h-full object-cover">
             </div>
             <h1 class="text-3xl font-bold text-dark mb-2">أنا متطوع</h1>
             <p class="text-gray-600">انضم لمئات المتطوعين في مصر</p>
@@ -182,7 +180,7 @@ if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Supabase Authentication Script -->
     <script type="module">
-        import { authenticateVolunteer, setSession } from './js/auth-service.js';
+        import { authenticateVolunteer, setSession } from './assets/js/auth-service.js?v=<?php echo time(); ?>';
 
         const form = document.getElementById('login-form');
         const codeInput = document.getElementById('code-input');
@@ -234,7 +232,7 @@ if (!$useSupabase && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     formData.append('volunteer_data', JSON.stringify(result.data));
                     formData.append('is_admin', result.isAdmin ? '1' : '0');
 
-                    const response = await fetch('login-handler.php', {
+                    const response = await fetch('controllers/login-handler.php', {
                         method: 'POST',
                         body: formData
                     });

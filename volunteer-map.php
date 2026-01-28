@@ -19,7 +19,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -199,7 +199,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
     <div id="toast-container" class="toast-container"></div>
 
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <!-- Header -->
@@ -387,8 +387,9 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
     </div>
 
     <script type="module">
-        import { supabase } from './js/supabase-client.js';
-        import { getVolunteerByCode, removeVolunteer, subscribeToVolunteers } from './js/volunteers-service.js';
+        import { getVolunteerByCode, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
+        import { getSession } from './assets/js/auth-service.js?v=<?php echo time(); ?>';
+        import { supabase } from './assets/js/supabase-client.js?v=<?php echo time(); ?>';
 
         const volunteerCode = '<?php echo addslashes($volunteer_code); ?>';
         let map = null;
@@ -397,11 +398,11 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
 
         // Hall map configurations
         const HALL_MAPS = {
-            1: { image: 'CIPF_Map/CIBF-map-1.jpg', width: 1200, height: 1600 },
-            2: { image: 'CIPF_Map/CIBF-map-2.png', width: 1200, height: 1600 },
-            3: { image: 'CIPF_Map/CIBF-map-3.png', width: 1200, height: 1600 },
-            4: { image: 'CIPF_Map/CIBF-map-4.png', width: 1200, height: 1600 },
-            5: { image: 'CIPF_Map/CIBF-map-5.png', width: 1200, height: 1600 }
+            1: { image: 'assets/images/CIPF_Map/CIBF-map-1.jpg', width: 1200, height: 1600 },
+            2: { image: 'assets/images/CIPF_Map/CIBF-map-2.png', width: 1200, height: 1600 },
+            3: { image: 'assets/images/CIPF_Map/CIBF-map-3.png', width: 1200, height: 1600 },
+            4: { image: 'assets/images/CIPF_Map/CIBF-map-4.png', width: 1200, height: 1600 },
+            5: { image: 'assets/images/CIPF_Map/CIBF-map-5.png', width: 1200, height: 1600 }
         };
 
         async function loadVolunteerLocation() {

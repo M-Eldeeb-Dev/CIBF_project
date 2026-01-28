@@ -21,7 +21,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
@@ -68,7 +68,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
 
 <body class="bg-light relative min-h-screen">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <!-- Header -->
@@ -80,7 +80,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
         <!-- Profile Info -->
         <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
             <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden border-4 border-yellow-400">
-                <img src="images/logo.jpg" alt="Profile" class="w-full h-full object-cover">
+                <img src="assets/images/logo.jpg" alt="Profile" class="w-full h-full object-cover">
             </div>
             <h2 class="text-xl font-bold text-center text-dark mb-1" id="profile-name">
                 <?php echo htmlspecialchars($volunteer_name); ?>
@@ -95,36 +95,128 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             </div>
 
             <div class="space-y-4" id="profile-details">
+                <!-- Basic Info -->
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">الكود</span>
-                    <span class="text-dark font-semibold"><?php echo htmlspecialchars($volunteer_code); ?></span>
+                    <span class="text-gray-600 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
+                        </svg>
+                        الكود
+                    </span>
+                    <span
+                        class="text-dark font-bold text-lg bg-blue-100 text-blue-700 px-3 py-1 rounded-lg"><?php echo htmlspecialchars($volunteer_code); ?></span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">المجموعة</span>
+                    <span class="text-gray-600 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                        المجموعة
+                    </span>
                     <span class="text-dark font-semibold"
                         id="profile-group"><?php echo htmlspecialchars($volunteer_group); ?></span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">الفترة</span>
+                    <span class="text-gray-600 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        الفترة
+                    </span>
                     <span class="text-dark font-semibold"
                         id="profile-period"><?php echo htmlspecialchars($volunteer_period); ?></span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">القطاع</span>
-                    <span class="text-dark font-semibold"
+                    <span class="text-gray-600 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        القطاع
+                    </span>
+                    <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg font-bold"
                         id="profile-sector"><?php echo htmlspecialchars($volunteer_sector); ?></span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600" id="profile-hall-label">القاعة الحالية</span>
-                    <span class="text-dark font-semibold" id="profile-hall">جاري التحميل...</span>
-                </div>
-                <div class="flex items-center justify-between py-2 border-b">
-                    <span class="text-gray-600">Break 1</span>
-                    <span class="text-dark font-semibold"><?php echo htmlspecialchars($volunteer_break1); ?></span>
+                    <span class="text-gray-600 flex items-center gap-2" id="profile-hall-label">
+                        <svg class="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        القاعة المُعينة
+                    </span>
+                    <span class="text-dark font-semibold" id="profile-hall-id">جاري التحميل...</span>
                 </div>
                 <div class="flex items-center justify-between py-2">
-                    <span class="text-gray-600">Break 2</span>
-                    <span class="text-dark font-semibold"><?php echo htmlspecialchars($volunteer_break2); ?></span>
+                    <span class="text-gray-600 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        الموقع الحالي
+                    </span>
+                    <span class="text-dark font-bold" id="profile-hall">جاري التحميل...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Slot Schedule -->
+        <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                        clip-rule="evenodd" />
+                </svg>
+                جدول التواجد اليومي
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-amber-200">
+                    <div class="text-xs text-amber-600 font-semibold mb-1">⏰ 10:00 - 11:00</div>
+                    <div id="profile-loc1" class="text-dark font-bold text-lg">-</div>
+                </div>
+                <div class="bg-gradient-to-br from-yellow-50 to-lime-50 rounded-xl p-4 border border-lime-200">
+                    <div class="text-xs text-lime-600 font-semibold mb-1">⏰ 11:00 - 03:00</div>
+                    <div id="profile-loc2" class="text-dark font-bold text-lg">-</div>
+                </div>
+                <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 border border-blue-200">
+                    <div class="text-xs text-blue-600 font-semibold mb-1">⏰ 03:00 - 06:00</div>
+                    <div id="profile-loc3" class="text-dark font-bold text-lg">-</div>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 border border-purple-200">
+                    <div class="text-xs text-purple-600 font-semibold mb-1">⏰ 06:00 - 07:00</div>
+                    <div id="profile-loc4" class="text-dark font-bold text-lg">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Break Times -->
+        <div class="bg-white rounded-3xl shadow-xl p-6 mb-6">
+            <h3 class="text-lg font-bold text-dark mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                        clip-rule="evenodd" />
+                </svg>
+                أوقات الراحة
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div
+                    class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 text-center">
+                    <div class="text-xs text-green-600 font-semibold mb-2">☕ الراحة الأولى</div>
+                    <div class="text-dark font-bold text-xl"><?php echo htmlspecialchars($volunteer_break1); ?></div>
+                </div>
+                <div
+                    class="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 border border-teal-200 text-center">
+                    <div class="text-xs text-teal-600 font-semibold mb-2">☕ الراحة الثانية</div>
+                    <div class="text-dark font-bold text-xl"><?php echo htmlspecialchars($volunteer_break2); ?></div>
                 </div>
             </div>
         </div>
@@ -201,7 +293,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             </div>
         </div>
 
-        <a href="logout.php"
+        <a href="controllers/logout.php"
             class="block w-full text-center bg-red-100 text-red-700 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
             تسجيل الخروج
         </a>
@@ -263,21 +355,61 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
 
     <!-- Load real-time data from Supabase -->
     <script type="module">
-        import { getVolunteerByCode, subscribeToVolunteers, submitCallbackRequest, deleteCallbackRequest } from './js/volunteers-service.js';
-
-        const volunteerCode = '<?php echo addslashes($volunteer_code); ?>';
+        import { getVolunteerByCode, submitCallbackRequest, deleteCallbackRequest, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
+        import { getSession } from './assets/js/auth-service.js?v=<?php echo time(); ?>'; const volunteerCode = '<?php echo addslashes($volunteer_code); ?>';
 
         async function loadVolunteerData() {
             try {
-                const data = await getVolunteerByCode(volunteerCode);
+                // Timeout promise - rejects after 5 seconds
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Request timed out')), 5000);
+                });
+
+                // Data promise
+                const dataPromise = getVolunteerByCode(volunteerCode);
+
+                // Race them
+                const data = await Promise.race([dataPromise, timeoutPromise]);
+
                 if (data) {
                     updateUI(data);
                     updateCallbackSection(data);
+                } else {
+                    console.warn('No data returned for volunteer');
+                    showErrorState();
                 }
             } catch (error) {
                 console.error('Error loading volunteer data:', error);
-                document.getElementById('presence-status').textContent = 'متطوع نشط';
+                showErrorState();
             }
+        }
+
+        function showErrorState() {
+            // Reset UI elements to show dashes or error state instead of infinite loading
+            document.getElementById('presence-status').textContent = 'غير متوفر';
+            document.getElementById('presence-badge').textContent = 'غير معروف';
+            document.getElementById('presence-badge').className = 'bg-gray-200 text-gray-500 px-4 py-1 rounded-full text-sm font-bold';
+
+            document.getElementById('profile-hall').textContent = '-';
+            
+            // Reset new fields
+            const hallIdEl = document.getElementById('profile-hall-id');
+            if (hallIdEl) hallIdEl.textContent = '-';
+            
+            const locEls = ['profile-loc1', 'profile-loc2', 'profile-loc3', 'profile-loc4'];
+            locEls.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '-';
+            });
+
+            // Only update fields if they are currently showing "Loading..." or similar placeholder
+            const els = ['profile-group', 'profile-period', 'profile-sector'];
+            els.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && (el.textContent === '' || el.textContent === 'جاري التحميل...')) {
+                    el.textContent = '-';
+                }
+            });
         }
 
         function updateUI(data) {
@@ -287,6 +419,14 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
                 if (hallId == 102) return 'غرفة المعلومات';
                 if (hallId >= 1 && hallId <= 5) return `قاعة ${hallId}`;
                 return 'غير محدد';
+            }
+
+            // Format location type helper
+            function formatLocType(loc) {
+                if (!loc || loc === 'N/A') return '-';
+                if (loc === 'صالة') return '📍 صالة';
+                if (loc === 'باب') return '🚪 باب';
+                return loc;
             }
 
             // Update status text
@@ -311,12 +451,25 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             if (data.current_loc == '101') effectiveHallId = 101;
             else if (data.current_loc == '102') effectiveHallId = 102;
 
-            // Update hall with formatted name
+            // Update assigned hall (hall_id)
+            const hallIdEl = document.getElementById('profile-hall-id');
+            if (hallIdEl) {
+                hallIdEl.textContent = formatHallName(data.hall_id);
+            }
+
+            // Update current location
             document.getElementById('profile-hall').textContent = formatHallName(effectiveHallId);
 
-            // Update label
-            const isSpecial = effectiveHallId == 101 || effectiveHallId == 102;
-            document.getElementById('profile-hall-label').textContent = isSpecial ? 'الموقع الحالي' : 'القاعة الحالية';
+            // Update time slot locations (loc1-loc4)
+            const loc1El = document.getElementById('profile-loc1');
+            const loc2El = document.getElementById('profile-loc2');
+            const loc3El = document.getElementById('profile-loc3');
+            const loc4El = document.getElementById('profile-loc4');
+
+            if (loc1El) loc1El.textContent = formatLocType(data.loc1);
+            if (loc2El) loc2El.textContent = formatLocType(data.loc2);
+            if (loc3El) loc3El.textContent = formatLocType(data.loc3);
+            if (loc4El) loc4El.textContent = formatLocType(data.loc4);
 
             // Update group if different
             if (data.group) {

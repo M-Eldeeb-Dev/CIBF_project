@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_type'])) {
     header('Location: index.php');
     exit;
 }
-require_once 'notes_loader.php';
+require_once __DIR__ . '/controllers/notes_loader.php';
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -15,11 +15,11 @@ require_once 'notes_loader.php';
     <title>روابط هامة - معرض الكتاب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
 
 <body class="bg-gray-50 font-[Cairo]">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <div class="bg-blue-600 text-white p-6 rounded-b-3xl shadow-lg mb-0 relative z-10">
@@ -27,7 +27,7 @@ require_once 'notes_loader.php';
     </div>
 
     <!-- Notes Ticker -->
-    <?php include 'notes_ticker.php'; ?>
+    <?php include 'includes/notes_ticker.php'; ?>
 
     <div class="max-w-md mx-auto px-4 mt-6">
         <div class="bg-white rounded-3xl shadow-lg p-6">
@@ -66,7 +66,7 @@ require_once 'notes_loader.php';
                 <a href="https://bookfairgo.com/" target="_blank"
                     class="flex items-center gap-4 p-4 bg-blue-600 text-white rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
                     <div class="w-12 h-12 flex items-center justify-center bg-white rounded-lg p-1">
-                        <img src="images/book-fair-go.png" alt="BookFairGo" class="w-full h-full object-contain">
+                        <img src="assets/images/book-fair-go.png" alt="BookFairGo" class="w-full h-full object-contain">
                     </div>
                     <div class="flex-1">
                         <span class="text-lg font-bold block">موقع BookFairGo</span>

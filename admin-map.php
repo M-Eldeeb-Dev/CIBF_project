@@ -106,6 +106,15 @@ requireAuth('admin');
             background-color: #eab308;
         }
 
+        .filter-btn {
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background-color: #2570d8 !important;
+            color: white !important;
+        }
+
         /* Toast Notification Styles */
         .toast-container {
             position: fixed;
@@ -182,7 +191,7 @@ requireAuth('admin');
     <div id="toast-container" class="toast-container"></div>
 
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <!-- Header -->
@@ -237,6 +246,68 @@ requireAuth('admin');
                 <span class="text-primary font-bold">👆</span>
                 <span class="text-sm">اضغط لإضافة موقع</span>
             </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+            <div class="flex flex-wrap gap-2 mb-3">
+                <span class="text-sm font-bold text-gray-600 w-full mb-1">تصفية حسب القطاع:</span>
+                <button onclick="filterBySector('all')" id="filter-all"
+                    class="filter-btn active px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white">
+                    الكل
+                </button>
+                <button onclick="filterBySector('A')" id="filter-A"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
+                    قطاع A
+                </button>
+                <button onclick="filterBySector('B')" id="filter-B"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
+                    قطاع B
+                </button>
+                <button onclick="filterBySector('C')" id="filter-C"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
+                    قطاع C
+                </button>
+                <button onclick="filterBySector('D')" id="filter-D"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
+                    قطاع D
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <span class="text-sm font-bold text-gray-600 w-full mb-1">أماكن خاصة:</span>
+                <button onclick="filterByLocation('gate')" id="filter-gate"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
+                    🚪 البوابة
+                </button>
+                <button onclick="filterByLocation('inforoom')" id="filter-inforoom"
+                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-violet-100 text-violet-700 hover:bg-violet-200">
+                    ℹ️ غرفة المعلومات
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3">
+                <span class="text-sm font-bold text-gray-600 w-full mb-1">تصفية حسب الفترة:</span>
+                <button onclick="filterByPeriod('all')" id="filter-period-all"
+                    class="filter-btn period-filter active px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white">
+                    كل الفترات
+                </button>
+                <button onclick="filterByPeriod('10-11')" id="filter-period-10"
+                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
+                    ⏰ 10-11
+                </button>
+                <button onclick="filterByPeriod('11-3')" id="filter-period-11"
+                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
+                    ⏰ 11-3
+                </button>
+                <button onclick="filterByPeriod('3-6')" id="filter-period-3"
+                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
+                    ⏰ 3-6
+                </button>
+                <button onclick="filterByPeriod('6-7')" id="filter-period-6"
+                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
+                    ⏰ 6-7
+                </button>
+            </div>
+            <p id="filter-count" class="text-xs text-gray-500 mt-3 text-center"></p>
         </div>
 
         <!-- Find Volunteer Search Bar -->
@@ -504,7 +575,8 @@ requireAuth('admin');
                 <span class="text-xs">المتطوعين</span>
             </a>
 
-            <a href="logout.php" class="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition">
+            <a href="controllers/logout.php"
+                class="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
@@ -515,8 +587,13 @@ requireAuth('admin');
     </div>
 
     <script type="module">
-        import { initMap, switchHall, enableSpotCreation, getCurrentHall } from './js/leaflet-map.js';
-        import { getAllVolunteers, subscribeToVolunteers, assignVolunteer, clearDeleteReason } from './js/volunteers-service.js';
+        import { initMap, switchHall, enableSpotCreation, getCurrentHall } from './assets/js/leaflet-map.js?v=<?php echo time(); ?>';
+        import { getAllVolunteers, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
+
+        // Expose function to global scope for HTML onclick
+        window.switchToHall = switchHall;
+        window.getCurrentHall = getCurrentHall;
+
 
         let currentActiveTab = 1;
         let allVolunteers = [];
@@ -551,6 +628,46 @@ requireAuth('admin');
             return hallId || 'غير محدد';
         }
         window.formatHallName = formatHallName;
+
+        // Current period filter state
+        let currentPeriodFilter = 'all';
+
+        // Filter by period function
+        window.filterByPeriod = function(period) {
+            currentPeriodFilter = period;
+            
+            // Update button styles
+            document.querySelectorAll('.period-filter').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                if (!btn.classList.contains('bg-amber-100')) {
+                    btn.classList.add('bg-gray-100');
+                }
+            });
+            
+            const activeBtn = document.getElementById(`filter-period-${period === 'all' ? 'all' : period.split('-')[0]}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-primary', 'text-white');
+                activeBtn.classList.remove('bg-gray-100', 'bg-amber-100', 'text-amber-700');
+            }
+            
+            // Update the manual volunteer list with filter
+            if (window.updateManualVolList) {
+                window.updateManualVolList();
+            }
+            
+            // Show toast
+            const periodLabels = {
+                'all': 'كل الفترات',
+                '10-11': 'فترة 10-11',
+                '11-3': 'فترة 11-3',
+                '3-6': 'فترة 3-6',
+                '6-7': 'فترة 6-7'
+            };
+            showToast(`تصفية: ${periodLabels[period] || period}`, 'info');
+        };
+
+        // Get current period filter
+        window.getCurrentPeriodFilter = () => currentPeriodFilter;
 
         // Initialize map when page loads
         document.addEventListener('DOMContentLoaded', async () => {
@@ -669,7 +786,7 @@ requireAuth('admin');
         /**
          * Find Volunteer on Map Logic
          */
-        import { findVolunteerOnMap } from './js/leaflet-map.js';
+        import { findVolunteerOnMap } from './assets/js/leaflet-map.js?v=<?php echo time(); ?>';
 
         async function initMapSearch() {
             const findInput = document.getElementById('map-find-vol-search');

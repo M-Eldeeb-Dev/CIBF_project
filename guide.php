@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_type'])) {
     header('Location: index.php');
     exit;
 }
-require_once 'notes_loader.php';
+require_once __DIR__ . '/controllers/notes_loader.php';
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -15,7 +15,7 @@ require_once 'notes_loader.php';
     <title>دليل الفعاليات - أنا متطوع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -37,14 +37,14 @@ require_once 'notes_loader.php';
 
 <body class="bg-gray-50 relative min-h-screen">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
     <div class="bg-primary text-white p-6 rounded-b-3xl shadow-lg mb-0">
         <h1 class="text-2xl font-bold text-center">دليل الفعاليات والملاحظات</h1>
     </div>
 
     <!-- Notes Ticker -->
-    <?php include 'notes_ticker.php'; ?>
+    <?php include 'includes/notes_ticker.php'; ?>
 
     <div class="max-w-2xl mx-auto px-4 mt-6">
         <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">تفاصيل الفعاليات</h2>
@@ -63,7 +63,7 @@ require_once 'notes_loader.php';
 
         <?php
         // Load halls advices from structured JSON
-        $halls_advices_path = 'json_files/halls_advices.json';
+        $halls_advices_path = './data/json_files/halls_advices.json';
         $halls_advices_data = file_get_contents($halls_advices_path);
         if (strpos($halls_advices_data, "\xEF\xBB\xBF") === 0) {
             $halls_advices_data = substr($halls_advices_data, 3);

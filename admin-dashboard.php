@@ -3,7 +3,7 @@ require_once 'includes/auth-guard.php';
 requireAuth('admin');
 
 // Handle Notes Logic
-$notes_file = __DIR__ . '/json_files/notes.json';
+$notes_file = __DIR__ . '/data/json_files/notes.json';
 $notes = [];
 if (file_exists($notes_file)) {
     $notes = json_decode(file_get_contents($notes_file), true) ?? [];
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body class="bg-light relative min-h-screen">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <!-- Header -->
@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="text-sm opacity-90">مرحباً بك في لوحة التحكم</p>
             </div>
             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
+                <img src="assets/images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
             </div>
         </div>
     </div>
@@ -245,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <a href="logout.php"
+        <a href="controllers/logout.php"
             class="block w-full text-center bg-red-100 text-red-700 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105 mb-6">
             تسجيل الخروج
         </a>
@@ -253,9 +253,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Callback Management Script -->
     <script type="module">
-        import { getCallbackRequests, approveCallbackRequest, rejectCallbackRequest, clearCallbackRequest, assignVolunteer, subscribeToVolunteers } from './js/volunteers-service.js';
+        import { getCallbackRequests, approveCallbackRequest, rejectCallbackRequest, clearCallbackRequest, assignVolunteer, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
 
-        window.confirmNoteDelete = function(e, btn) {
+        window.confirmNoteDelete = function (e, btn) {
             e.preventDefault();
             Swal.fire({
                 title: 'هل أنت متأكد؟',
@@ -475,7 +475,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <span class="text-xs">المتطوعين</span>
             </a>
 
-            <a href="logout.php" class="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition">
+            <a href="controllers/logout.php"
+                class="flex flex-col items-center gap-1 text-gray-400 hover:text-red-500 transition">
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />

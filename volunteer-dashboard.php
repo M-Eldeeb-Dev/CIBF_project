@@ -12,7 +12,7 @@ $volunteer_loc4 = $_SESSION['user_loc4'] ?? 'N/A';
 $volunteer_period = $_SESSION['user_period'] ?? 'N/A';
 
 // Read Notes
-require_once 'notes_loader.php';
+require_once __DIR__ . '/controllers/notes_loader.php';
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -25,7 +25,7 @@ require_once 'notes_loader.php';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -119,7 +119,7 @@ require_once 'notes_loader.php';
 
 <body class="bg-light relative min-h-screen">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
 
     <!-- Header -->
@@ -134,7 +134,7 @@ require_once 'notes_loader.php';
                             id="volunteer-code"><?php echo htmlspecialchars($volunteer_code); ?></span></p>
                 </div>
                 <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                    <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
+                    <img src="assets/images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
                 </div>
             </div>
             <!-- Presence Status -->
@@ -149,7 +149,7 @@ require_once 'notes_loader.php';
     </div>
 
     <!-- Notes Ticker -->
-    <?php include 'notes_ticker.php'; ?>
+    <?php include 'includes/notes_ticker.php'; ?>
 
     <!-- Callback Status Banner (dynamically shown) -->
     <div id="callback-banner" class="max-w-md mx-auto px-4 hidden">
@@ -230,7 +230,7 @@ require_once 'notes_loader.php';
 
             <?php
             // Load hall names from JSON
-            $halls_advices_path = 'json_files/halls_advices.json';
+            $halls_advices_path = 'data/json_files/halls_advices.json';
             $halls_data = [];
             if (file_exists($halls_advices_path)) {
                 $content = file_get_contents($halls_advices_path);
@@ -249,7 +249,8 @@ require_once 'notes_loader.php';
                         <option value="">اختر القاعة...</option>
                         <?php foreach ($halls_data as $key => $hall): ?>
                             <option value="<?php echo htmlspecialchars($key); ?>">
-                                <?php echo htmlspecialchars($hall['name']); ?></option>
+                                <?php echo htmlspecialchars($hall['name']); ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -289,7 +290,7 @@ require_once 'notes_loader.php';
                 msg.classList.add('hidden');
 
                 try {
-                    const response = await fetch('add_advice.php', {
+                    const response = await fetch('controllers/add_advice.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ hall, text, code })
@@ -325,7 +326,7 @@ require_once 'notes_loader.php';
             تصفح قاعات المعرض
         </a>
 
-        <a href="logout.php"
+        <a href="controllers/logout.php"
             class="block w-full text-center bg-red-100 text-red-700 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition transform hover:scale-105">
             تسجيل الخروج
         </a>
@@ -386,8 +387,8 @@ require_once 'notes_loader.php';
 
     <!-- Load real-time data from Supabase -->
     <script type="module">
-        import { getVolunteerByCode, subscribeToVolunteers } from './js/volunteers-service.js';
-        import { getSession } from './js/auth-service.js';
+        import { getVolunteerByCode, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
+        import { getSession } from './assets/js/auth-service.js?v=<?php echo time(); ?>';
 
         const volunteerCode = '<?php echo addslashes($volunteer_code); ?>';
 

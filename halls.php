@@ -5,8 +5,8 @@ if (!isset($_SESSION['user_type'])) {
     exit;
 }
 
-require_once 'halls_data.php';
-require_once 'notes_loader.php';
+require_once __DIR__ . '/config/halls_data.php';
+require_once __DIR__ . '/controllers/notes_loader.php';
 
 // Define Main Halls
 $main_halls = [
@@ -79,7 +79,7 @@ if ($selected_main_hall_key === 'All') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -136,7 +136,7 @@ if ($selected_main_hall_key === 'All') {
 
 <body class="bg-light min-h-screen relative">
     <div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none">
-        <img src="images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
+        <img src="assets/images/logo.jpg" alt="Background Logo" class="w-full h-full object-cover">
     </div>
     <!-- Header -->
     <div class="bg-primary text-white p-6 rounded-b-3xl shadow-lg">
@@ -147,14 +147,14 @@ if ($selected_main_hall_key === 'All') {
                     <p class="text-sm opacity-90">معرض القاهرة الدولي للكتاب 2026</p>
                 </div>
                 <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
-                    <img src="images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
+                    <img src="assets/images/logo.jpg" alt="Logo" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Notes Ticker -->
-    <?php include 'notes_ticker.php'; ?>
+    <?php include 'includes/notes_ticker.php'; ?>
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 py-6">
