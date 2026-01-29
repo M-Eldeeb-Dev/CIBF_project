@@ -273,17 +273,7 @@ requireAuth('admin');
                     قطاع D
                 </button>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <span class="text-sm font-bold text-gray-600 w-full mb-1">أماكن خاصة:</span>
-                <button onclick="filterByLocation('gate')" id="filter-gate"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200">
-                    🚪 البوابة
-                </button>
-                <button onclick="filterByLocation('inforoom')" id="filter-inforoom"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-violet-100 text-violet-700 hover:bg-violet-200">
-                    ℹ️ غرفة المعلومات
-                </button>
-            </div>
+
             <div class="flex flex-wrap gap-2 mt-3">
                 <span class="text-sm font-bold text-gray-600 w-full mb-1">تصفية حسب الفترة:</span>
                 <button onclick="filterByPeriod('all')" id="filter-period-all"
@@ -590,10 +580,28 @@ requireAuth('admin');
         import { initMap, switchHall, enableSpotCreation, getCurrentHall } from './assets/js/leaflet-map.js?v=<?php echo time(); ?>';
         import { getAllVolunteers, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
 
-        // Expose function to global scope for HTML onclick
-        window.switchToHall = switchHall;
+        // Expose function to global scope for HTML onclick with tab styling
+        window.switchToHall = async function(hallId) {
+            // Update tab styling
+            document.querySelectorAll('.hall-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-primary', 'text-white');
+                tab.classList.add('bg-gray-100');
+            });
+            
+            const activeTab = document.getElementById(`tab-${hallId}`);
+            if (activeTab) {
+                activeTab.classList.add('active', 'bg-primary', 'text-white');
+                activeTab.classList.remove('bg-gray-100');
+            }
+            
+            // Call the actual hall switch function
+            await switchHall(hallId);
+            currentActiveTab = hallId;
+            
+            // Show toast notification
+            showToast(`تم التبديل إلى قاعة ${hallId}`, 'info');
+        };
         window.getCurrentHall = getCurrentHall;
-
 
         let currentActiveTab = 1;
         let allVolunteers = [];
