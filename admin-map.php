@@ -240,64 +240,12 @@ requireAuth('admin');
             </div>
             <div class="flex items-center gap-2">
                 <span class="legend-dot yellow"></span>
-                <span class="text-sm">موقع شاغر</span>
+                <span class="text-sm">موقع متاح</span>
             </div>
             <div class="flex items-center gap-2">
                 <span class="text-primary font-bold">👆</span>
                 <span class="text-sm">اضغط لإضافة موقع</span>
             </div>
-        </div>
-
-        <!-- Filter Section -->
-        <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
-            <div class="flex flex-wrap gap-2 mb-3">
-                <span class="text-sm font-bold text-gray-600 w-full mb-1">تصفية حسب القطاع:</span>
-                <button onclick="filterBySector('all')" id="filter-all"
-                    class="filter-btn active px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white">
-                    الكل
-                </button>
-                <button onclick="filterBySector('A')" id="filter-A"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
-                    قطاع A
-                </button>
-                <button onclick="filterBySector('B')" id="filter-B"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
-                    قطاع B
-                </button>
-                <button onclick="filterBySector('C')" id="filter-C"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
-                    قطاع C
-                </button>
-                <button onclick="filterBySector('D')" id="filter-D"
-                    class="filter-btn px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 hover:bg-gray-200">
-                    قطاع D
-                </button>
-            </div>
-
-            <div class="flex flex-wrap gap-2 mt-3">
-                <span class="text-sm font-bold text-gray-600 w-full mb-1">تصفية حسب الفترة:</span>
-                <button onclick="filterByPeriod('all')" id="filter-period-all"
-                    class="filter-btn period-filter active px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white">
-                    كل الفترات
-                </button>
-                <button onclick="filterByPeriod('10-11')" id="filter-period-10"
-                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
-                    ⏰ 10-11
-                </button>
-                <button onclick="filterByPeriod('11-3')" id="filter-period-11"
-                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
-                    ⏰ 11-3
-                </button>
-                <button onclick="filterByPeriod('3-6')" id="filter-period-3"
-                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
-                    ⏰ 3-6
-                </button>
-                <button onclick="filterByPeriod('6-7')" id="filter-period-6"
-                    class="filter-btn period-filter px-4 py-2 rounded-lg text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200">
-                    ⏰ 6-7
-                </button>
-            </div>
-            <p id="filter-count" class="text-xs text-gray-500 mt-3 text-center"></p>
         </div>
 
         <!-- Find Volunteer Search Bar -->

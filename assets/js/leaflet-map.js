@@ -14,29 +14,29 @@ import { captureAndUploadMap } from "./map-screenshot-service.js";
 // Map configuration for each hall
 const HALL_MAPS = {
   1: {
-    image: "assets/images/CIPF_Map/CIBF-map-1.jpg",
-    width: 1200,
-    height: 1600,
+    image: "assets/images/CIPF_Map/CIBF-map-2.png",
+    width: 1800,
+    height: 2000,
   },
   2: {
-    image: "assets/images/CIPF_Map/CIBF-map-2.png",
-    width: 1200,
-    height: 1600,
+    image: "assets/images/CIPF_Map/CIBF-map-1.jpg",
+    width: 1800,
+    height: 2000,
   },
   3: {
-    image: "assets/images/CIPF_Map/CIBF-map-3.png",
-    width: 1200,
-    height: 1600,
+    image: "assets/images/CIPF_Map/CIBF-map-4.png",
+    width: 1800,
+    height: 2000,
   },
   4: {
-    image: "assets/images/CIPF_Map/CIBF-map-4.png",
-    width: 1200,
-    height: 1600,
+    image: "assets/images/CIPF_Map/CIBF-map-3.png",
+    width: 1800,
+    height: 2000,
   },
   5: {
     image: "assets/images/CIPF_Map/CIBF-map-5.png",
-    width: 1200,
-    height: 1600,
+    width: 1800,
+    height: 2000,
   },
 };
 
