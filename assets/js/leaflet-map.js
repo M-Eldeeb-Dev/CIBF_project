@@ -11,33 +11,46 @@ import {
 } from "./volunteers-service.js";
 import { captureAndUploadMap } from "./map-screenshot-service.js";
 
-// Map configuration for each hall
+// Map configuration for each hall with real image dimensions
 const HALL_MAPS = {
   1: {
-    image: "assets/images/CIPF_Map/CIBF-map-2.png",
-    width: 1800,
-    height: 2000,
+    image: "assets/images/CIPF_Map/CIBF-map-1.jpg",
+    width: 3182,
+    height: 3869,
   },
   2: {
-    image: "assets/images/CIPF_Map/CIBF-map-1.jpg",
-    width: 1800,
-    height: 2000,
+    image: "assets/images/CIPF_Map/CIBF-map-2.png",
+    width: 3096,
+    height: 3909,
   },
   3: {
-    image: "assets/images/CIPF_Map/CIBF-map-4.png",
-    width: 1800,
-    height: 2000,
+    image: "assets/images/CIPF_Map/CIBF-map-3.png",
+    width: 3015,
+    height: 3896,
   },
   4: {
-    image: "assets/images/CIPF_Map/CIBF-map-3.png",
-    width: 1800,
-    height: 2000,
+    image: "assets/images/CIPF_Map/CIBF-map-4.png",
+    width: 2990,
+    height: 3876,
   },
   5: {
     image: "assets/images/CIPF_Map/CIBF-map-5.png",
-    width: 1800,
-    height: 2000,
+    width: 3404,
+    height: 3283,
   },
+};
+
+// Sector to Hall mapping (which sectors belong to which hall)
+// A sector -> Hall 2 with Gate 2 and Info 2
+// B sector -> Hall 1 with Gate 1 and Info 1
+// C sector -> Hall 4,5 with Gate 4 and Info 4
+// D sector -> Hall 3,5 with Gate 3 and Info 3
+const HALL_TO_SECTORS = {
+  1: ["B"], // Hall 1 -> B sector
+  2: ["A"], // Hall 2 -> A sector
+  3: ["D"], // Hall 3 -> D sector
+  4: ["C"], // Hall 4 -> C sector
+  5: ["C", "D"], // Hall 5 -> C & D sectors
 };
 
 let map = null;
@@ -50,6 +63,7 @@ let allVolunteers = [];
 // Filter state
 let currentSectorFilter = "all"; // 'all', 'A', 'B', 'C', 'D'
 let currentLocationFilter = "all"; // 'all', 'gate', 'inforoom'
+let currentTeamFilter = "all"; // 'all', 'theta', 'delta' (ثيتا / دلتا)
 
 // Toast notification function (uses global container if exists)
 function showToast(message, type = "info") {
@@ -239,25 +253,33 @@ function createOccupiedPopup(volunteer) {
  * Filters by sector based on current hall
  */
 function createAssignPopup(lat, lng) {
-  // Sector mapping: which sectors belong to which hall
-  const hallToSectors = {
-    1: ["A"],
-    2: ["B"],
-    3: ["C"],
-    4: ["D"],
-    5: ["C", "D"],
-  };
+  // Use global sector mapping constant
+  const allowedSectors = HALL_TO_SECTORS[currentHall] || [];
 
-  const allowedSectors = hallToSectors[currentHall] || [];
-
-  // Filter available volunteers by sector for current hall
+  // Filter available volunteers by sector for current hall and team
   const availableVolunteers = allVolunteers.filter((v) => {
     // Must not be occupied
     if (v.is_present || v.is_occupied) return false;
     // Must match sector for this hall
     if (allowedSectors.length > 0) {
       const vSector = (v.sector || "").toUpperCase();
-      return allowedSectors.includes(vSector);
+      if (!allowedSectors.includes(vSector)) return false;
+    }
+    // Apply team filter if set
+    if (currentTeamFilter !== "all") {
+      const vTeam = (v.group || "").toLowerCase();
+      if (
+        currentTeamFilter === "theta" &&
+        !vTeam.includes("ثيتا") &&
+        vTeam !== "theta"
+      )
+        return false;
+      if (
+        currentTeamFilter === "delta" &&
+        !vTeam.includes("دلتا") &&
+        vTeam !== "delta"
+      )
+        return false;
     }
     return true;
   });
@@ -339,22 +361,31 @@ window.filterVolunteerOptions = function (query) {
   const list = document.getElementById("volunteer-list");
   const q = (query || "").toLowerCase();
 
-  // Sector mapping: which sectors belong to which hall
-  const hallToSectors = {
-    1: ["A"],
-    2: ["B"],
-    3: ["C"],
-    4: ["D"],
-    5: ["C", "D"],
-  };
-  const allowedSectors = hallToSectors[currentHall] || [];
+  // Use global sector mapping constant
+  const allowedSectors = HALL_TO_SECTORS[currentHall] || [];
 
-  // Filter by availability and sector
+  // Filter by availability, sector, and team
   const available = allVolunteers.filter((v) => {
     if (v.is_present || v.is_occupied) return false;
     if (allowedSectors.length > 0) {
       const vSector = (v.sector || "").toUpperCase();
-      return allowedSectors.includes(vSector);
+      if (!allowedSectors.includes(vSector)) return false;
+    }
+    // Apply team filter if set
+    if (currentTeamFilter !== "all") {
+      const vTeam = (v.group || "").toLowerCase();
+      if (
+        currentTeamFilter === "theta" &&
+        !vTeam.includes("ثيتا") &&
+        vTeam !== "theta"
+      )
+        return false;
+      if (
+        currentTeamFilter === "delta" &&
+        !vTeam.includes("دلتا") &&
+        vTeam !== "delta"
+      )
+        return false;
     }
     return true;
   });
@@ -387,12 +418,31 @@ window.selectVolunteer = function (code, element) {
 
 /**
  * Handle map click to create new spot
+ * Validates that click is within image boundaries
  */
 export function enableSpotCreation() {
   if (!map) return;
 
   map.on("click", async (e) => {
     const { lat, lng } = e.latlng;
+    const config = HALL_MAPS[currentHall];
+
+    // Boundary validation - check if click is within image bounds
+    if (lng < 0 || lng > config.width || lat < 0 || lat > config.height) {
+      // Show error popup using SweetAlert2 if available, otherwise toast
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          icon: "error",
+          title: "موقع غير صالح",
+          text: "لا يمكنك إضافة نقطة خارج حدود الخريطة",
+          confirmButtonText: "حسناً",
+          confirmButtonColor: "#2570d8",
+        });
+      } else {
+        showToast("لا يمكنك إضافة نقطة خارج حدود الخريطة", "error");
+      }
+      return;
+    }
 
     // Create temporary yellow marker
     const marker = addMarker(null, lat, lng, false);
@@ -594,6 +644,15 @@ export async function filterByLocation(locationType) {
 }
 
 /**
+ * Filter markers by team (ثيتا / دلتا)
+ * @param {string} team - 'all', 'theta', 'delta'
+ */
+export async function filterByTeam(team) {
+  currentTeamFilter = team;
+  await refreshMarkersWithFilter();
+}
+
+/**
  * Refresh markers with current filter applied
  */
 async function refreshMarkersWithFilter() {
@@ -611,7 +670,22 @@ async function refreshMarkersWithFilter() {
 
   // Apply sector filter
   if (currentSectorFilter !== "all") {
-    occupied = occupied.filter((v) => v.sector === currentSectorFilter);
+    occupied = occupied.filter(
+      (v) =>
+        (v.sector || "").toUpperCase() === currentSectorFilter.toUpperCase(),
+    );
+  }
+
+  // Apply team filter (ثيتا / دلتا)
+  if (currentTeamFilter !== "all") {
+    occupied = occupied.filter((v) => {
+      const vTeam = (v.group || "").toLowerCase();
+      if (currentTeamFilter === "theta")
+        return vTeam.includes("ثيتا") || vTeam === "theta";
+      if (currentTeamFilter === "delta")
+        return vTeam.includes("دلتا") || vTeam === "delta";
+      return true;
+    });
   }
 
   // Apply location filter
@@ -645,3 +719,10 @@ async function refreshMarkersWithFilter() {
 // Expose filter functions to window for onclick handlers
 window.filterBySector = filterBySector;
 window.filterByLocation = filterByLocation;
+window.filterByTeam = filterByTeam;
+
+// Get current team filter value (for UI sync)
+export function getCurrentTeamFilter() {
+  return currentTeamFilter;
+}
+window.getCurrentTeamFilter = getCurrentTeamFilter;

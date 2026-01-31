@@ -396,13 +396,13 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
         let marker = null;
         let volunteerData = null;
 
-        // Hall map configurations
+        // Hall map configurations with real image dimensions
         const HALL_MAPS = {
-            1: { image: 'assets/images/CIPF_Map/CIBF-map-1.jpg', width: 1200, height: 1600 },
-            2: { image: 'assets/images/CIPF_Map/CIBF-map-2.png', width: 1200, height: 1600 },
-            3: { image: 'assets/images/CIPF_Map/CIBF-map-3.png', width: 1200, height: 1600 },
-            4: { image: 'assets/images/CIPF_Map/CIBF-map-4.png', width: 1200, height: 1600 },
-            5: { image: 'assets/images/CIPF_Map/CIBF-map-5.png', width: 1200, height: 1600 }
+            1: { image: 'assets/images/CIPF_Map/CIBF-map-1.jpg', width: 3182, height: 3869 },
+            2: { image: 'assets/images/CIPF_Map/CIBF-map-2.png', width: 3096, height: 3909 },
+            3: { image: 'assets/images/CIPF_Map/CIBF-map-3.png', width: 3015, height: 3896 },
+            4: { image: 'assets/images/CIPF_Map/CIBF-map-4.png', width: 2990, height: 3876 },
+            5: { image: 'assets/images/CIPF_Map/CIBF-map-5.png', width: 3404, height: 3283 }
         };
 
         async function loadVolunteerLocation() {
@@ -476,6 +476,8 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                     hallNumber.className = 'font-bold text-xl text-white';
                     locationLabel.textContent = 'موقعك الحالي';
                     locationDesc.textContent = 'أنت في نقطة استقبال الزوار';
+                    mapContainer.classList.add('hidden');
+
                 } else if (effectiveHallId == 102) {
                     // Info Room - Special styling
                     hallInfo.className = 'rounded-2xl p-4 mb-4 transition-all duration-300 bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-lg';
@@ -485,6 +487,7 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                     hallNumber.className = 'font-bold text-xl text-white';
                     locationLabel.textContent = 'موقعك الحالي';
                     locationDesc.textContent = 'أنت في مركز الدعم والمساعدة';
+                    mapContainer.classList.add('hidden');
                 } else {
                     // Regular hall - Default styling
                     hallInfo.className = 'rounded-2xl p-4 mb-4 transition-all duration-300 bg-gradient-to-r from-blue-500 to-primary text-white shadow-lg';
@@ -494,10 +497,11 @@ $volunteer_code = $_SESSION['user_code'] ?? 'N/A';
                     hallNumber.className = 'font-bold text-xl text-white';
                     locationLabel.textContent = 'القاعة الحالية';
                     locationDesc.textContent = `موقعك: ${data.current_loc}`;
+                    mapContainer.classList.remove('hidden');
                 }
 
                 removeBtn.classList.remove('hidden');
-                mapContainer.classList.remove('hidden');
+                // mapContainer.classList.remove('hidden');
                 noLocationMessage.classList.add('hidden');
 
                 // Initialize or update map

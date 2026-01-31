@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 80px);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom, 20px));
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -91,10 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .nav-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-        }
-
-        body {
-            padding-bottom: 120px;
         }
     </style>
 </head>

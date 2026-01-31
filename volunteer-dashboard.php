@@ -29,7 +29,7 @@ require_once __DIR__ . '/controllers/notes_loader.php';
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 120px);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom, 20px));
             -webkit-tap-highlight-color: transparent;
         }
 

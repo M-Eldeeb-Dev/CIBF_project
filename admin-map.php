@@ -20,7 +20,7 @@ requireAuth('admin');
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 120px);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom, 120px));
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -111,6 +111,15 @@ requireAuth('admin');
         }
 
         .filter-btn.active {
+            background-color: #2570d8 !important;
+            color: white !important;
+        }
+
+        .team-filter {
+            transition: all 0.2s ease;
+        }
+
+        .team-filter.active {
             background-color: #2570d8 !important;
             color: white !important;
         }
@@ -229,6 +238,22 @@ requireAuth('admin');
             <button onclick="switchToHall(5)" id="tab-5"
                 class="hall-tab flex-1 min-w-[80px] py-3 px-4 rounded-xl font-bold text-center bg-gray-100">
                 قاعة 5
+            </button>
+        </div>
+
+        <!-- Team Filter Toggle (ثيتا / دلتا) -->
+        <div class="bg-white rounded-2xl shadow-lg p-2 mb-4 flex gap-2">
+            <button onclick="switchTeamFilter('all')" id="team-all"
+                class="team-filter active flex-1 py-2 px-3 rounded-xl font-bold text-center">
+                كل الفرق
+            </button>
+            <button onclick="switchTeamFilter('theta')" id="team-theta"
+                class="team-filter flex-1 py-2 px-3 rounded-xl font-bold text-center bg-gray-100">
+                ثيتا
+            </button>
+            <button onclick="switchTeamFilter('delta')" id="team-delta"
+                class="team-filter flex-1 py-2 px-3 rounded-xl font-bold text-center bg-gray-100">
+                دلتا
             </button>
         </div>
 
@@ -525,31 +550,53 @@ requireAuth('admin');
     </div>
 
     <script type="module">
-        import { initMap, switchHall, enableSpotCreation, getCurrentHall } from './assets/js/leaflet-map.js?v=<?php echo time(); ?>';
-        import { getAllVolunteers, subscribeToVolunteers } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
+        import { initMap, switchHall, enableSpotCreation, getCurrentHall, filterByTeam } from './assets/js/leaflet-map.js?v=<?php echo time(); ?>';
+        import { getAllVolunteers, subscribeToVolunteers, clearDeleteReason, assignVolunteer } from './assets/js/volunteers-service.js?v=<?php echo time(); ?>';
 
         // Expose function to global scope for HTML onclick with tab styling
-        window.switchToHall = async function(hallId) {
+        window.switchToHall = async function (hallId) {
             // Update tab styling
             document.querySelectorAll('.hall-tab').forEach(tab => {
                 tab.classList.remove('active', 'bg-primary', 'text-white');
                 tab.classList.add('bg-gray-100');
             });
-            
+
             const activeTab = document.getElementById(`tab-${hallId}`);
             if (activeTab) {
                 activeTab.classList.add('active', 'bg-primary', 'text-white');
                 activeTab.classList.remove('bg-gray-100');
             }
-            
+
             // Call the actual hall switch function
             await switchHall(hallId);
             currentActiveTab = hallId;
-            
+
             // Show toast notification
             showToast(`تم التبديل إلى قاعة ${hallId}`, 'info');
         };
         window.getCurrentHall = getCurrentHall;
+
+        // Team filter toggle function (ثيتا / دلتا)
+        window.switchTeamFilter = async function (team) {
+            // Update button styling
+            document.querySelectorAll('.team-filter').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('bg-gray-100');
+            });
+
+            const activeBtn = document.getElementById(`team-${team}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-primary', 'text-white');
+                activeBtn.classList.remove('bg-gray-100');
+            }
+
+            // Call the filter function
+            await filterByTeam(team);
+
+            // Show toast notification
+            const teamLabels = { all: 'كل الفرق', theta: 'ثيتا', delta: 'دلتا' };
+            showToast(`تصفية: ${teamLabels[team] || team}`, 'info');
+        };
 
         let currentActiveTab = 1;
         let allVolunteers = [];
@@ -589,9 +636,9 @@ requireAuth('admin');
         let currentPeriodFilter = 'all';
 
         // Filter by period function
-        window.filterByPeriod = function(period) {
+        window.filterByPeriod = function (period) {
             currentPeriodFilter = period;
-            
+
             // Update button styles
             document.querySelectorAll('.period-filter').forEach(btn => {
                 btn.classList.remove('active', 'bg-primary', 'text-white');
@@ -599,18 +646,18 @@ requireAuth('admin');
                     btn.classList.add('bg-gray-100');
                 }
             });
-            
+
             const activeBtn = document.getElementById(`filter-period-${period === 'all' ? 'all' : period.split('-')[0]}`);
             if (activeBtn) {
                 activeBtn.classList.add('active', 'bg-primary', 'text-white');
                 activeBtn.classList.remove('bg-gray-100', 'bg-amber-100', 'text-amber-700');
             }
-            
+
             // Update the manual volunteer list with filter
             if (window.updateManualVolList) {
                 window.updateManualVolList();
             }
-            
+
             // Show toast
             const periodLabels = {
                 'all': 'كل الفترات',

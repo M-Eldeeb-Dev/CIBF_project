@@ -26,7 +26,7 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
     <style>
         body {
             font-family: 'Cairo', sans-serif;
-            padding-bottom: env(safe-area-inset-bottom, 120px);
+            padding-bottom: calc(100px + env(safe-area-inset-bottom, 20px));
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -391,11 +391,11 @@ $volunteer_break2 = $_SESSION['user_break2'] ?? 'N/A';
             document.getElementById('presence-badge').className = 'bg-gray-200 text-gray-500 px-4 py-1 rounded-full text-sm font-bold';
 
             document.getElementById('profile-hall').textContent = '-';
-            
+
             // Reset new fields
             const hallIdEl = document.getElementById('profile-hall-id');
             if (hallIdEl) hallIdEl.textContent = '-';
-            
+
             const locEls = ['profile-loc1', 'profile-loc2', 'profile-loc3', 'profile-loc4'];
             locEls.forEach(id => {
                 const el = document.getElementById(id);

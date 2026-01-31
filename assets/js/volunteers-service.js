@@ -192,6 +192,10 @@ export async function assignVolunteer(volunteerCode, hallId, location = "") {
       current_loc: location,
       reason: null,
       reasons_date: null,
+      // Reset callback request fields on assignment
+      callback_comment: null,
+      callback_comment_date: null,
+      callback_comment_approval: null,
     })
     .eq("volunteerCode", volunteerCode);
 
@@ -324,7 +328,18 @@ export async function approveCallbackRequest(volunteerCode) {
     .from("volunteers")
     .update({
       callback_comment_approval: "approved",
-      callback_comment: null, // Clear the message after approval
+      // Keep comment/date for record or clear them? User said "reset functionalities".
+      // But typically approve -> assign -> reset.
+      // Current code clears them. Let's start by NOT clearing them here so they persist until Assignment?
+      // actually user said "approve it and also spot him reset...".
+      // If I clear them here, they are resets.
+      // Current implementation:
+      // callback_comment: null,
+      // callback_comment_date: null,
+      // I will leave this as is, or align with "reset to null".
+      // If I set approval to "approved", it is NOT null.
+      // But assignVolunteer will set it to null.
+      callback_comment: null,
       callback_comment_date: null,
     })
     .eq("volunteerCode", volunteerCode);
@@ -348,7 +363,9 @@ export async function rejectCallbackRequest(volunteerCode) {
   const { error } = await supabase
     .from("volunteers")
     .update({
-      callback_comment_approval: "rejected",
+      callback_comment: null,
+      callback_comment_date: null,
+      callback_comment_approval: null,
     })
     .eq("volunteerCode", volunteerCode);
 
@@ -402,8 +419,7 @@ export async function deleteCallbackRequest(volunteerCode) {
       callback_comment_date: null,
       callback_comment_approval: null,
     })
-    .eq("volunteerCode", volunteerCode)
-    .eq("callback_comment_approval", "pending");
+    .eq("volunteerCode", volunteerCode);
 
   if (error) {
     console.error("Error deleting callback request:", error);
